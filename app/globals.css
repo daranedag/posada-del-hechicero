@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 42 33% 96%;
+    --foreground: 158 24% 10%;
+    --card: 42 38% 98%;
+    --card-foreground: 158 24% 10%;
+    --popover: 42 38% 98%;
+    --popover-foreground: 158 24% 10%;
+    --primary: 162 45% 22%;
+    --primary-foreground: 42 38% 97%;
+    --secondary: 39 32% 89%;
+    --secondary-foreground: 158 24% 14%;
+    --muted: 40 23% 90%;
+    --muted-foreground: 157 10% 38%;
+    --accent: 24 53% 53%;
+    --accent-foreground: 42 38% 98%;
+    --destructive: 2 62% 46%;
+    --destructive-foreground: 42 38% 98%;
+    --border: 39 22% 80%;
+    --input: 39 22% 78%;
+    --ring: 162 45% 30%;
+    --copper: 24 53% 53%;
+    --teal: 167 43% 32%;
+    --parchment: 42 42% 92%;
+    --radius: 0.65rem;
+    --font-manrope: "Manrope Variable";
+    --font-cormorant: "Cormorant Garamond";
+  }
+
+  .dark {
+    --background: 157 25% 7%;
+    --foreground: 42 36% 92%;
+    --card: 157 20% 10%;
+    --card-foreground: 42 36% 92%;
+    --popover: 157 20% 10%;
+    --popover-foreground: 42 36% 92%;
+    --primary: 165 38% 58%;
+    --primary-foreground: 157 25% 7%;
+    --secondary: 157 16% 16%;
+    --secondary-foreground: 42 36% 92%;
+    --muted: 157 16% 16%;
+    --muted-foreground: 41 17% 66%;
+    --accent: 25 58% 60%;
+    --accent-foreground: 157 25% 7%;
+    --destructive: 2 62% 54%;
+    --destructive-foreground: 42 36% 95%;
+    --border: 158 13% 23%;
+    --input: 158 13% 23%;
+    --ring: 165 38% 58%;
+    --copper: 25 58% 60%;
+    --teal: 165 38% 45%;
+    --parchment: 41 25% 18%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-background font-sans text-foreground antialiased;
+    background-image:
+      radial-gradient(circle at 12% -4%, hsl(var(--teal) / 0.1), transparent 31rem),
+      linear-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.035) 1px, transparent 1px);
+    background-size: auto, 32px 32px, 32px 32px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-semibold tracking-[-0.025em];
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: hsl(var(--copper) / 0.3);
+  }
+}
+
+@layer components {
+  .pdh-container {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+  }
+
+  .pdh-kicker {
+    @apply flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-teal;
+  }
+
+  .pdh-kicker::before {
+    content: "";
+    @apply block h-px w-7 bg-current;
+  }
+
+  .pdh-section {
+    @apply py-16 sm:py-24;
+  }
+
+  .pdh-panel {
+    @apply rounded-[1.25rem] border border-foreground/10 bg-card/85 shadow-sm backdrop-blur;
+  }
+
+  .pdh-button-primary {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-bold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  .pdh-button-secondary {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-full border border-foreground/15 bg-background/80 px-6 text-sm font-bold text-foreground transition hover:-translate-y-0.5 hover:border-copper/60 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  .pdh-input {
+    @apply h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20;
+  }
+
+  .pdh-label {
+    @apply text-sm font-bold text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

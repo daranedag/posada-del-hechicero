@@ -1,0 +1,31 @@
+
+# InsForge & AI agent skills
+.insforge
+.agent
+.agents
+.augment
+.claude
+.cline
+.github/copilot*
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
+
+# Next.js
+node_modules/
+.pnpm-store/
+.next/
+out/
+
+# Local credentials
+.env
+.env.local
+.env*.local
+
+# Local tooling
+*.log
+.vercel/
+*.tsbuildinfo
