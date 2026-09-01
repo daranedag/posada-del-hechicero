@@ -17,7 +17,7 @@ export default async function EventsPage() {
           <div className="grid gap-4">
             {events.map((event) => (
               <article key={event.id} className="pdh-panel grid overflow-hidden sm:grid-cols-[130px_1fr_auto]">
-                <div className="flex items-center justify-center gap-3 bg-[#d8a36b] p-6 text-[#2b1b10] sm:flex-col sm:gap-0">
+                <div className="flex items-center justify-center gap-3 bg-primary p-6 text-primary-foreground sm:flex-col sm:gap-0">
                   <span className="font-display text-5xl font-semibold leading-none">{formatChileDay(event.starts_at)}</span>
                   <span className="text-xs font-bold uppercase tracking-[0.17em]">{formatChileMonth(event.starts_at)}</span>
                 </div>

@@ -8,11 +8,11 @@ export function SiteFooter() {
     "https://www.instagram.com/posada.delhechicero/";
 
   return (
-    <footer className="border-t border-white/10 bg-[#0d1714] text-[#f3ead7]">
+    <footer className="border-t border-white/10 bg-[#1b1025] text-[#f8effc]">
       <div className="pdh-container grid gap-10 py-12 md:grid-cols-[1.3fr_0.7fr_0.8fr]">
         <div className="max-w-md">
           <div className="flex items-center gap-4">
-            <BrandMark />
+            <BrandMark className="h-20" />
             <div>
               <p className="font-display text-2xl font-semibold">La Posada del Hechicero</p>
               <p className="text-xs uppercase tracking-[0.2em] text-white/50">Jugar es encontrarse</p>

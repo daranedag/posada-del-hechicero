@@ -4,7 +4,7 @@ Prototipo comercial y funcional para la tienda de juegos de mesa y TCG de Valdiv
 
 ## Funcionalidades
 
-- Vitrinas para juegos de mesa, Magic, Pokémon y Mitos y Leyendas.
+- Vitrinas para juegos de mesa y Magic: The Gathering.
 - Eventos, ubicación y contacto directo por Instagram.
 - Panel privado para crear torneos con código y enlace compartible.
 - Inscripción sin cuenta para jugadores y enlace privado de edición.

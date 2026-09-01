@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { AtSign, Menu, MapPin } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Sheet,
   SheetContent,
@@ -26,16 +27,13 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-foreground/10 bg-background/90 backdrop-blur-xl">
-      <div className="pdh-container flex h-[4.75rem] items-center justify-between gap-5">
-        <Link href="/" className="group flex items-center gap-3" aria-label="Inicio">
-          <BrandMark className="transition-transform group-hover:rotate-[52deg]" />
-          <span className="leading-none">
-            <span className="block font-display text-[1.25rem] font-semibold tracking-[-0.02em]">
-              La Posada
-            </span>
-            <span className="mt-1 block text-[0.63rem] font-bold uppercase tracking-[0.22em] text-muted-foreground">
-              del Hechicero
-            </span>
+      <div className="pdh-container flex h-[5.25rem] items-center justify-between gap-5">
+        <Link href="/" className="group flex items-center gap-3" aria-label="La Posada del Hechicero, inicio">
+          <BrandMark className="h-[4.6rem] transition-transform duration-300 group-hover:scale-105" />
+          <span className="hidden border-l border-foreground/15 pl-3 text-[0.62rem] font-bold uppercase leading-4 tracking-[0.17em] text-muted-foreground xl:block">
+            Juegos y comunidad
+            <br />
+            en Valdivia
           </span>
         </Link>
 
@@ -61,46 +59,50 @@ export function SiteHeader() {
             <MapPin className="size-4 text-copper" />
             Valdivia
           </a>
+          <ThemeToggle />
           <a href={instagram} target="_blank" rel="noreferrer" className="pdh-button-primary h-9 px-4">
             <AtSign className="size-4" />
             Instagram
           </a>
         </div>
 
-        <Sheet>
-          <SheetTrigger
-            aria-label="Abrir menu"
-            className="grid size-10 place-items-center rounded-full border border-foreground/15 bg-card lg:hidden"
-          >
-            <Menu className="size-5" />
-          </SheetTrigger>
-          <SheetContent className="w-[88%] border-l-foreground/10 bg-background sm:max-w-sm">
-            <SheetHeader className="border-b border-foreground/10 p-6 text-left">
-              <SheetTitle className="font-display text-2xl">La Posada del Hechicero</SheetTitle>
-              <SheetDescription>Anibal Pinto 1843, Local 3 · Valdivia</SheetDescription>
-            </SheetHeader>
-            <nav className="grid gap-1 p-4" aria-label="Navegacion movil">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-lg px-4 py-3 text-base font-bold transition hover:bg-secondary"
+        <div className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle />
+          <Sheet>
+            <SheetTrigger
+              aria-label="Abrir menu"
+              className="grid size-10 place-items-center rounded-full border border-foreground/15 bg-card"
+            >
+              <Menu className="size-5" />
+            </SheetTrigger>
+            <SheetContent className="w-[88%] border-l-foreground/10 bg-background sm:max-w-sm">
+              <SheetHeader className="border-b border-foreground/10 p-6 text-left">
+                <SheetTitle className="font-display text-2xl">La Posada del Hechicero</SheetTitle>
+                <SheetDescription>Anibal Pinto 1843, Local 3 · Valdivia</SheetDescription>
+              </SheetHeader>
+              <nav className="grid gap-1 p-4" aria-label="Navegacion movil">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-lg px-4 py-3 text-base font-bold transition hover:bg-secondary"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <a
+                  href={instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-bold text-primary-foreground"
                 >
-                  {item.label}
-                </Link>
-              ))}
-              <a
-                href={instagram}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-bold text-primary-foreground"
-              >
-                <AtSign className="size-4" />
-                Hablar por Instagram
-              </a>
-            </nav>
-          </SheetContent>
-        </Sheet>
+                  <AtSign className="size-4" />
+                  Hablar por Instagram
+                </a>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

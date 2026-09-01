@@ -4,56 +4,56 @@
 
 @layer base {
   :root {
-    --background: 42 33% 96%;
-    --foreground: 158 24% 10%;
-    --card: 42 38% 98%;
-    --card-foreground: 158 24% 10%;
-    --popover: 42 38% 98%;
-    --popover-foreground: 158 24% 10%;
-    --primary: 162 45% 22%;
-    --primary-foreground: 42 38% 97%;
-    --secondary: 39 32% 89%;
-    --secondary-foreground: 158 24% 14%;
-    --muted: 40 23% 90%;
-    --muted-foreground: 157 10% 38%;
-    --accent: 24 53% 53%;
-    --accent-foreground: 42 38% 98%;
+    --background: 278 38% 97%;
+    --foreground: 274 30% 13%;
+    --card: 285 36% 99%;
+    --card-foreground: 274 30% 13%;
+    --popover: 285 36% 99%;
+    --popover-foreground: 274 30% 13%;
+    --primary: 269 48% 37%;
+    --primary-foreground: 285 40% 98%;
+    --secondary: 276 32% 91%;
+    --secondary-foreground: 274 30% 18%;
+    --muted: 276 22% 92%;
+    --muted-foreground: 274 12% 41%;
+    --accent: 326 58% 50%;
+    --accent-foreground: 285 40% 98%;
     --destructive: 2 62% 46%;
-    --destructive-foreground: 42 38% 98%;
-    --border: 39 22% 80%;
-    --input: 39 22% 78%;
-    --ring: 162 45% 30%;
-    --copper: 24 53% 53%;
-    --teal: 167 43% 32%;
-    --parchment: 42 42% 92%;
+    --destructive-foreground: 285 40% 98%;
+    --border: 276 22% 82%;
+    --input: 276 22% 79%;
+    --ring: 269 48% 48%;
+    --copper: 326 58% 50%;
+    --teal: 269 48% 42%;
+    --parchment: 278 35% 94%;
     --radius: 0.65rem;
     --font-manrope: "Manrope Variable";
     --font-cormorant: "Cormorant Garamond";
   }
 
   .dark {
-    --background: 157 25% 7%;
-    --foreground: 42 36% 92%;
-    --card: 157 20% 10%;
-    --card-foreground: 42 36% 92%;
-    --popover: 157 20% 10%;
-    --popover-foreground: 42 36% 92%;
-    --primary: 165 38% 58%;
-    --primary-foreground: 157 25% 7%;
-    --secondary: 157 16% 16%;
-    --secondary-foreground: 42 36% 92%;
-    --muted: 157 16% 16%;
-    --muted-foreground: 41 17% 66%;
-    --accent: 25 58% 60%;
-    --accent-foreground: 157 25% 7%;
+    --background: 276 32% 7%;
+    --foreground: 278 28% 94%;
+    --card: 276 26% 11%;
+    --card-foreground: 278 28% 94%;
+    --popover: 276 26% 11%;
+    --popover-foreground: 278 28% 94%;
+    --primary: 271 64% 67%;
+    --primary-foreground: 276 36% 9%;
+    --secondary: 277 22% 17%;
+    --secondary-foreground: 278 28% 94%;
+    --muted: 277 20% 16%;
+    --muted-foreground: 278 14% 68%;
+    --accent: 326 70% 65%;
+    --accent-foreground: 276 36% 9%;
     --destructive: 2 62% 54%;
-    --destructive-foreground: 42 36% 95%;
-    --border: 158 13% 23%;
-    --input: 158 13% 23%;
-    --ring: 165 38% 58%;
-    --copper: 25 58% 60%;
-    --teal: 165 38% 45%;
-    --parchment: 41 25% 18%;
+    --destructive-foreground: 278 28% 96%;
+    --border: 276 16% 24%;
+    --input: 276 16% 24%;
+    --ring: 271 64% 67%;
+    --copper: 326 70% 65%;
+    --teal: 271 64% 70%;
+    --parchment: 277 21% 17%;
   }
 
   * {
@@ -67,10 +67,11 @@
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased;
     background-image:
-      radial-gradient(circle at 12% -4%, hsl(var(--teal) / 0.1), transparent 31rem),
+      radial-gradient(circle at 12% -4%, hsl(var(--primary) / 0.14), transparent 31rem),
+      radial-gradient(circle at 92% 18%, hsl(var(--accent) / 0.08), transparent 24rem),
       linear-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px),
       linear-gradient(90deg, hsl(var(--foreground) / 0.035) 1px, transparent 1px);
-    background-size: auto, 32px 32px, 32px 32px;
+    background-size: auto, auto, 32px 32px, 32px 32px;
   }
 
   h1,

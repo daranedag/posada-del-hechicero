@@ -28,7 +28,7 @@ export async function TcgGamePage({
         <ProductGrid products={products} />
       </section>
       <section className="pdh-container pb-20">
-        <div className="rounded-[1.25rem] bg-[#d8a36b] p-8 text-[#2b1b10] sm:p-10">
+        <div className="rounded-[1.25rem] bg-primary p-8 text-primary-foreground sm:p-10">
           <CalendarDays className="size-7" />
           <h2 className="mt-7 max-w-2xl text-4xl leading-none">{eventCopy}</h2>
           <Link href="/eventos" className="mt-7 inline-flex items-center gap-2 font-bold">Revisar calendario <ArrowRight className="size-4" /></Link>

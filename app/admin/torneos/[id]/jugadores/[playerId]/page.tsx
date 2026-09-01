@@ -89,7 +89,7 @@ export default async function PlayerDecksPage({
               <div className="grid gap-7 p-5 sm:p-7 lg:grid-cols-[1fr_1fr_0.9fr]">
                 <DeckColumn title="Mazo principal" cards={main} />
                 <DeckColumn title="Sideboard" cards={sideboard} />
-                <div><p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.13em] text-teal"><Clock3 className="size-4" /> Texto recibido</p><pre className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded-xl bg-[#142821] p-4 text-xs leading-5 text-[#f4ead7]">{submission.raw_list}</pre></div>
+                <div><p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.13em] text-teal"><Clock3 className="size-4" /> Texto recibido</p><pre className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded-xl bg-[#281637] p-4 text-xs leading-5 text-[#faf3fc]">{submission.raw_list}</pre></div>
               </div>
             </article>
           );

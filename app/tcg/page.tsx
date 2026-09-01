@@ -1,33 +1,25 @@
 import Link from "next/link";
-import { ArrowRight, Flame, Layers3, Shield, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Flame, Layers3, Sparkles } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
-
-const games = [
-  { href: "/tcg/magic", name: "Magic: The Gathering", copy: "Singles, producto sellado, Commander y circuito competitivo.", icon: Flame, tone: "bg-[#193c34] text-[#f6ebd8]" },
-  { href: "/tcg/pokemon", name: "Pokémon TCG", copy: "Colección, juego casual y una puerta de entrada para nuevos entrenadores.", icon: Zap, tone: "bg-[#dba63f] text-[#291f0e]" },
-  { href: "/tcg/mitos-y-leyendas", name: "Mitos y Leyendas", copy: "Estrategia y mitología en el TCG chileno que marcó generaciones.", icon: Shield, tone: "bg-[#803d2c] text-[#fff1df]" },
-];
 
 export const metadata = { title: "Trading Card Games" };
 
 export default function TcgPage() {
   return (
     <>
-      <PageHero kicker="Trading Card Games" title="Colecciona. Construye. Compite." description="Tres comunidades, incontables estrategias y un mismo lugar para reunirse en Valdivia." icon={Layers3} />
+      <PageHero kicker="Trading Card Games" title="Colecciona. Construye. Compite." description="Magic: The Gathering, juego organizado y una comunidad que se reúne en Valdivia." icon={Layers3} />
       <section className="pdh-section pdh-container">
-        <div className="grid gap-5 lg:grid-cols-3">
-          {games.map(({ href, name, copy, icon: Icon, tone }) => (
-            <Link key={href} href={href} className={`group flex min-h-[340px] flex-col justify-between rounded-[1.4rem] p-8 transition hover:-translate-y-1 hover:shadow-xl ${tone}`}>
-              <span className="grid size-12 place-items-center rounded-full border border-current/20 bg-white/10"><Icon className="size-5" /></span>
-              <div>
-                <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] opacity-60"><Sparkles className="size-3.5" /> Explorar juego</p>
-                <h2 className="text-4xl leading-none">{name}</h2>
-                <p className="mt-4 text-sm leading-6 opacity-70">{copy}</p>
-                <span className="mt-7 inline-flex items-center gap-2 text-sm font-bold">Entrar <ArrowRight className="size-4 transition group-hover:translate-x-1" /></span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <Link href="/tcg/magic" className="group grid min-h-[360px] overflow-hidden rounded-[1.4rem] bg-[linear-gradient(135deg,#281637_0%,#5b3386_55%,#a63e82_100%)] text-white shadow-ember transition hover:-translate-y-1 hover:shadow-xl md:grid-cols-[0.7fr_1.3fr]">
+          <div className="flex items-start p-8 sm:p-10">
+            <span className="grid size-14 place-items-center rounded-full border border-white/20 bg-white/10"><Flame className="size-6" /></span>
+          </div>
+          <div className="flex flex-col justify-end p-8 sm:p-10">
+            <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-white/60"><Sparkles className="size-3.5" /> Explorar juego</p>
+            <h2 className="text-4xl leading-none sm:text-5xl">Magic: The Gathering</h2>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/70">Singles, producto sellado, Commander y circuito competitivo.</p>
+            <span className="mt-7 inline-flex items-center gap-2 text-sm font-bold">Entrar <ArrowRight className="size-4 transition group-hover:translate-x-1" /></span>
+          </div>
+        </Link>
       </section>
     </>
   );
