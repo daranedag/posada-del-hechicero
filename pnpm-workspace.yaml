@@ -1,2 +1,8 @@
 allowBuilds:
   unrs-resolver: true
+
+# ESLint 9 todavía depende de Ajv 6. Mantener Ajv fuera del hoist privado
+# evita que resuelva accidentalmente el Ajv 8 usado por otras dependencias.
+hoistPattern:
+  - "*"
+  - "!ajv"

@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/deck-parser.test.ts tests/deck-rules.test.ts tests/mtgtop8-export.test.ts"
+    "test": "node --experimental-strip-types --test tests/admin-emails.test.ts tests/deck-parser.test.ts tests/deck-rules.test.ts tests/mtgtop8-export.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

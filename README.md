@@ -37,10 +37,10 @@ INSFORGE_URL=
 INSFORGE_API_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_INSTAGRAM_URL=https://www.instagram.com/posada.delhechicero/
-PDH_BOOTSTRAP_ADMIN_EMAIL=
+PDH_ADMIN_EMAILS=admin@example.com,otro-admin@example.com
 ```
 
-La primera sesión iniciada con `PDH_BOOTSTRAP_ADMIN_EMAIL` se registra automáticamente en `pdh_admins`. Las claves privadas solo se usan en el servidor y `.env.local` no se versiona.
+El panel usa el SSO de Google de InsForge. `PDH_ADMIN_EMAILS` es una lista privada, separada por comas, punto y coma o espacios, y es la autoridad para conceder acceso: una cuenta autenticada solo entra si su correo verificado aparece allí. Al autorizarse por primera vez se registra automáticamente en `pdh_admins`; si deja de estar permitida, su registro se revoca al siguiente acceso. Las claves privadas solo se usan en el servidor y `.env.local` no se versiona.
 
 ## InsForge
 
@@ -63,4 +63,4 @@ pnpm lint
 pnpm build
 ```
 
-Antes de desplegar en Vercel, copia las mismas variables de entorno y cambia `NEXT_PUBLIC_APP_URL` por el dominio definitivo.
+Antes de desplegar en Vercel, copia las mismas variables de entorno, cambia `NEXT_PUBLIC_APP_URL` por el dominio definitivo y autoriza `<dominio>/api/auth/callback` como URL de retorno en la configuración de autenticación de InsForge.
