@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/sheet";
 
 const navItems = [
-  { href: "/juegos-de-mesa", label: "Juegos de mesa" },
-  { href: "/tcg", label: "TCG" },
-  { href: "/eventos", label: "Eventos" },
+  { href: "/#redes", label: "Redes" },
+  { href: "/#direccion", label: "Dirección" },
+  { href: "/#horarios", label: "Horarios" },
+  { href: "/#buscar-juego", label: "Buscar un juego" },
   { href: "/torneos", label: "Inscribir mazo" },
 ];
 
@@ -60,10 +61,7 @@ export function SiteHeader() {
             Valdivia
           </a>
           <ThemeToggle />
-          <a href={instagram} target="_blank" rel="noreferrer" className="pdh-button-primary h-9 px-4">
-            <AtSign className="size-4" />
-            Instagram
-          </a>
+          <Link href="/#contacto" className="pdh-button-primary h-9 px-4"><AtSign className="size-4" /> Contacto</Link>
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
@@ -90,12 +88,7 @@ export function SiteHeader() {
                     {item.label}
                   </Link>
                 ))}
-                <a
-                  href={instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-bold text-primary-foreground"
-                >
+                <a href={instagram} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-bold text-primary-foreground">
                   <AtSign className="size-4" />
                   Hablar por Instagram
                 </a>

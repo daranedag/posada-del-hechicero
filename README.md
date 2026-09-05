@@ -6,6 +6,9 @@ Prototipo comercial y funcional para la tienda de juegos de mesa y TCG de Valdiv
 
 - Vitrinas para juegos de mesa y Magic: The Gathering.
 - Eventos, ubicación y contacto directo por Instagram.
+- Portada administrable con redes sociales, dirección, horarios, búsqueda de juegos y formulario de contacto.
+- Gestión de textos, enlaces y fotografías desde `/admin/sitio`.
+- Bandeja privada de consultas en `/admin/consultas`.
 - Panel privado para crear torneos con código y enlace compartible.
 - Inscripción sin cuenta para jugadores y enlace privado de edición.
 - Historial de versiones de cada decklist.
@@ -51,8 +54,16 @@ Las migraciones reproducibles están en `migrations/`:
 - `20260830213000_pdh-initial-schema.sql`: catálogo, eventos, torneos, jugadores, decklists, cartas, standings y políticas RLS.
 - `20260830224000_pdh-site-settings.sql`: contenido editable e imagen principal.
 - `20260830233000_pdh-public-demo-content.sql`: evento público confirmado usado en la demostración.
+- `20260904010000_pdh-site-content.sql`: secciones de la portada, textos repetibles, fotografías, consultas y políticas RLS.
 
-La imagen principal está en el bucket público `pdh_media`, clave `site/posada-hero.png`. Cada registro multimedia guarda URL y clave para poder migrarlo después.
+El modelo editorial usa exclusivamente tablas con prefijo `pdh_`:
+
+- `pdh_site_sections`: encabezado, título, descripción, orden y visibilidad de cada sección.
+- `pdh_site_items`: textos y enlaces repetibles, como redes, dirección y filas de horario.
+- `pdh_site_media`: fotografías por sección; conserva URL y clave de almacenamiento para poder eliminarlas correctamente.
+- `pdh_contact_submissions`: consultas privadas recibidas desde el formulario público.
+
+Las imágenes nuevas se guardan en el bucket público `pdh_media`, bajo la ruta `site/<seccion>/`. El Hero original y su composición visual se mantienen como contenido inicial.
 
 ## Verificación
 

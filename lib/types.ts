@@ -51,3 +51,13 @@ export interface TournamentFormat {
   max_sideboard_cards: number;
   max_copies: number;
 }
+
+export interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: "new" | "read" | "archived";
+  created_at: string;
+}
