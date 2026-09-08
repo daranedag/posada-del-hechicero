@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Clipboard, Download, ExternalLink, Save, Users } from "lucide-react";
 import { notFound } from "next/navigation";
-import { deleteTournamentAction, saveStandingsAction, updateTournamentStatusAction } from "@/app/admin/actions";
+import { deleteTournamentAction, deleteTournamentPlayerAction, saveStandingsAction, updateTournamentStatusAction } from "@/app/admin/actions";
 import { AdminDeleteButton } from "@/components/admin-delete-button";
 import { AdminNav } from "@/components/admin-nav";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -37,13 +37,14 @@ export default async function TournamentAdminPage({
   const submissions = new Map(((submissionsResult.data ?? []) as Submission[]).map((item) => [item.player_id, item]));
   const standings = new Map(((standingsResult.data ?? []) as Standing[]).map((item) => [item.player_id, item]));
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const shareUrl = `${appUrl}/torneos/${tournament.code}`;
+  const shareUrl = new URL(`/torneos/${tournament.code}`, appUrl).toString();
+  const operationSucceeded = estado === "actualizado" || estado === "jugador-eliminado";
   return (
     <section className="pdh-container py-10 sm:py-14">
       <AdminNav />
       {estado && (
-        <p className={`mb-6 rounded-lg border p-3 text-sm font-semibold ${estado === "actualizado" ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200" : "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"}`}>
-          {estado === "actualizado" ? "El estado del torneo fue actualizado." : estado === "error-eliminar" ? "No pudimos eliminar el torneo. Inténtalo nuevamente." : "No pudimos actualizar el estado del torneo. Inténtalo nuevamente."}
+        <p className={`mb-6 rounded-lg border p-3 text-sm font-semibold ${operationSucceeded ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200" : "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"}`}>
+          {estado === "actualizado" ? "El estado del torneo fue actualizado." : estado === "jugador-eliminado" ? "El participante y sus datos asociados fueron eliminados." : estado === "error-eliminar" ? "No pudimos eliminar el torneo. Inténtalo nuevamente." : estado === "error-jugador" ? "No pudimos eliminar al participante. Inténtalo nuevamente." : "No pudimos actualizar el estado del torneo. Inténtalo nuevamente."}
         </p>
       )}
       <div className="rounded-[1.25rem] bg-[#281637] p-7 text-[#faf3fc] sm:p-10">
@@ -52,9 +53,9 @@ export default async function TournamentAdminPage({
       </div>
 
       <div className="mt-9 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="pdh-kicker"><Users className="size-4" /> Participantes</p><h2 className="mt-3 text-4xl">{players.length} inscritos</h2></div><a href={`/api/admin/tournaments/${id}/export`} className="pdh-button-primary"><Download className="size-4" /> Exportar MTGTop8</a></div>
-      <form action={saveStandingsAction} className="pdh-panel mt-6 overflow-hidden"><input type="hidden" name="tournamentId" value={id} /><div className="overflow-x-auto"><table className="w-full min-w-[880px] text-sm"><thead className="bg-secondary/70 text-left text-xs uppercase tracking-[0.1em]"><tr><th className="p-4">Jugador</th><th className="p-4">Lista</th><th className="p-4">Puesto</th><th className="p-4">Pts</th><th className="p-4">G</th><th className="p-4">P</th><th className="p-4">E</th></tr></thead><tbody>
-        {players.map((player) => { const submission = submissions.get(player.id); const standing = standings.get(player.id); return <tr key={player.id} className="border-t border-foreground/10"><td className="p-4"><input type="hidden" name="playerId" value={player.id} /><Link href={`/admin/torneos/${id}/jugadores/${player.id}`} className="font-bold underline decoration-copper/40 underline-offset-4 hover:text-teal">{player.first_name} {player.last_name}</Link><p className="mt-1 text-xs text-muted-foreground">{player.email ?? "Sin email"}</p></td><td className="p-4">{submission ? <Link href={`/admin/torneos/${id}/jugadores/${player.id}`} className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">v{submission.version_number} · {submission.main_count}+{submission.sideboard_count}</Link> : <span className="text-xs text-red-700">Sin lista</span>}</td>{[["rank", standing?.rank], ["points", standing?.match_points], ["wins", standing?.wins], ["losses", standing?.losses], ["draws", standing?.draws]].map(([field, value]) => <td key={String(field)} className="p-4"><input name={`${field}:${player.id}`} type="number" min="0" defaultValue={value ?? ""} className="h-9 w-20 rounded-md border border-input bg-background px-2" /></td>)}</tr>; })}
-        {!players.length && <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">Aún no hay participantes.</td></tr>}
+      <form action={saveStandingsAction} className="pdh-panel mt-6 overflow-hidden"><input type="hidden" name="tournamentId" value={id} /><div className="overflow-x-auto"><table className="w-full min-w-[980px] text-sm"><thead className="bg-secondary/70 text-left text-xs uppercase tracking-[0.1em]"><tr><th className="p-4">Jugador</th><th className="p-4">Lista</th><th className="p-4">Puesto</th><th className="p-4">Pts</th><th className="p-4">G</th><th className="p-4">P</th><th className="p-4">E</th><th className="p-4 text-right">Acciones</th></tr></thead><tbody>
+        {players.map((player) => { const submission = submissions.get(player.id); const standing = standings.get(player.id); return <tr key={player.id} className="border-t border-foreground/10"><td className="p-4"><input type="hidden" name="playerId" value={player.id} /><Link href={`/admin/torneos/${id}/jugadores/${player.id}`} className="font-bold underline decoration-copper/40 underline-offset-4 hover:text-teal">{player.first_name} {player.last_name}</Link><p className="mt-1 text-xs text-muted-foreground">{player.email ?? "Sin email"}</p></td><td className="p-4">{submission ? <Link href={`/admin/torneos/${id}/jugadores/${player.id}`} className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">v{submission.version_number} · {submission.main_count}+{submission.sideboard_count}</Link> : <span className="text-xs text-red-700">Sin lista</span>}</td>{[["rank", standing?.rank], ["points", standing?.match_points], ["wins", standing?.wins], ["losses", standing?.losses], ["draws", standing?.draws]].map(([field, value]) => <td key={String(field)} className="p-4"><input name={`${field}:${player.id}`} type="number" min="0" defaultValue={value ?? ""} className="h-9 w-20 rounded-md border border-input bg-background px-2" /></td>)}<td className="p-4 text-right"><AdminDeleteButton formAction={deleteTournamentPlayerAction} name="playerIdToDelete" value={player.id} label="Eliminar" confirmationMessage={`¿Eliminar a ${player.first_name} ${player.last_name} y todas sus listas?`} /></td></tr>; })}
+        {!players.length && <tr><td colSpan={8} className="p-10 text-center text-muted-foreground">Aún no hay participantes.</td></tr>}
       </tbody></table></div>{players.length > 0 && <div className="flex justify-end border-t border-foreground/10 p-4"><button className="pdh-button-primary"><Save className="size-4" /> Guardar standings</button></div>}</form>
 
       <div className="mt-10 flex flex-col justify-between gap-4 rounded-xl border border-red-200 bg-red-50/70 p-5 dark:border-red-900 dark:bg-red-950/20 sm:flex-row sm:items-center">
