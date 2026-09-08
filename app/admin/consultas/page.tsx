@@ -20,7 +20,7 @@ const statusLabels: Record<ContactSubmission["status"], string> = {
 };
 
 export default async function ContactSubmissionsPage({ searchParams }: { searchParams: Promise<{ estado?: string }> }) {
-  const user = await requireAdmin();
+  await requireAdmin();
   const { data } = await adminInsforge.database
     .from("pdh_contact_submissions")
     .select("id,name,email,subject,message,status,created_at")
@@ -31,7 +31,7 @@ export default async function ContactSubmissionsPage({ searchParams }: { searchP
 
   return (
     <section className="pdh-container py-10 sm:py-14">
-      <AdminNav name={(user.admin as { display_name?: string }).display_name ?? user.email} />
+      <AdminNav />
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div><p className="pdh-kicker">Bandeja de entrada</p><h1 className="mt-4 text-5xl leading-none">Consultas recibidas</h1></div>
         <p className="max-w-md text-sm leading-6 text-muted-foreground">Mensajes enviados desde el formulario público de la portada.</p>

@@ -16,8 +16,8 @@ import type { Tournament } from "@/lib/types";
 export const metadata = { title: "Administración" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
-  const user = await requireAdmin();
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ estado?: string }> }) {
+  await requireAdmin();
   const [{ data: tournamentData }, { data: contactData }] = await Promise.all([
     adminInsforge.database
       .from("pdh_tournaments")
@@ -32,10 +32,17 @@ export default async function AdminPage() {
   ]);
   const tournaments = (tournamentData ?? []) as Tournament[];
   const newMessages = contactData?.length ?? 0;
+  const { estado } = await searchParams;
 
   return (
     <section className="pdh-container py-10 sm:py-14">
-      <AdminNav name={(user.admin as { display_name?: string }).display_name ?? user.email} />
+      <AdminNav />
+
+      {estado && (
+        <p className={`mb-6 rounded-lg border p-3 text-sm font-semibold ${estado === "torneo-error" ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200" : "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"}`}>
+          {estado === "torneo-error" ? "No pudimos eliminar el torneo. Inténtalo nuevamente." : "El torneo y todos sus datos asociados fueron eliminados."}
+        </p>
+      )}
 
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div><p className="pdh-kicker">Panel privado</p><h1 className="mt-4 text-5xl leading-none">Administrar la Posada</h1></div>

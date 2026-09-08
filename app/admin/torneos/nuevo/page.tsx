@@ -7,11 +7,11 @@ export const metadata = { title: "Crear torneo" };
 const errors: Record<string, string> = { datos: "Revisa los datos obligatorios.", fecha: "El cierre de listas no puede ser posterior al inicio del torneo.", guardar: "No pudimos crear el torneo." };
 
 export default async function NewTournamentPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const user = await requireAdmin();
+  await requireAdmin();
   const { error } = await searchParams;
   return (
     <section className="pdh-container py-10 sm:py-14">
-      <AdminNav name={(user.admin as { display_name?: string }).display_name ?? user.email} />
+      <AdminNav />
       <div className="mx-auto max-w-3xl"><p className="pdh-kicker">Nuevo evento competitivo</p><h1 className="mt-4 text-5xl leading-none">Crear torneo</h1><p className="mt-4 text-sm leading-6 text-muted-foreground">Al guardarlo quedará abierto y recibirás un código único para compartir.</p>
         {error && <p className="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900">{errors[error] ?? errors.guardar}</p>}
         <form action={createTournamentAction} className="pdh-panel mt-8 grid gap-5 p-6 sm:p-8">

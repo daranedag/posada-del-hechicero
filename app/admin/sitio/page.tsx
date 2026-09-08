@@ -40,7 +40,7 @@ const sectionHints: Record<SiteSection["key"], string> = {
 };
 
 export default async function SiteAdminPage({ searchParams }: { searchParams: Promise<{ estado?: string }> }) {
-  const user = await requireAdmin();
+  await requireAdmin();
   const [{ data: sectionsData }, { data: itemsData }, { data: mediaData }] = await Promise.all([
     adminInsforge.database.from("pdh_site_sections").select("key,admin_label,kicker,title,body,sort_order,is_visible").order("sort_order", { ascending: true }),
     adminInsforge.database.from("pdh_site_items").select("id,section_key,item_type,title,body,href,sort_order,is_visible").order("sort_order", { ascending: true }),
@@ -53,7 +53,7 @@ export default async function SiteAdminPage({ searchParams }: { searchParams: Pr
 
   return (
     <section className="pdh-container py-10 sm:py-14">
-      <AdminNav name={(user.admin as { display_name?: string }).display_name ?? user.email} />
+      <AdminNav />
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
           <p className="pdh-kicker">Contenido público</p>
