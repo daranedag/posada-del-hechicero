@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CheckCircle2, Clipboard, LoaderCircle, ShieldAlert } from "lucide-react";
 
 type Validation = { errors?: string[]; warnings?: string[]; mainCount?: number; sideboardCount?: number };
@@ -12,36 +12,49 @@ export function DeckSubmissionForm({
   code: string;
   defaults?: { firstName: string; lastName: string; email: string; source: string; deckList: string; editToken: string };
 }) {
+  const submissionLocked = useRef(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validation, setValidation] = useState<Validation | null>(null);
   const [result, setResult] = useState<{ version: number; editUrl: string; mainCount: number; sideboardCount: number } | null>(null);
 
   async function submit(formData: FormData) {
+    if (submissionLocked.current) return;
+    submissionLocked.current = true;
     setLoading(true);
     setError(null);
     setValidation(null);
-    const response = await fetch(`/api/tournaments/${code}/submit`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        firstName: formData.get("firstName"),
-        lastName: formData.get("lastName"),
-        email: formData.get("email"),
-        source: formData.get("source"),
-        deckList: formData.get("deckList"),
-        editToken: defaults?.editToken,
-      }),
-    });
-    const payload = await response.json();
-    setLoading(false);
-    if (!response.ok) {
-      setError(payload.error ?? "No pudimos guardar la lista.");
-      setValidation(payload.validation ?? null);
-      return;
+    let succeeded = false;
+
+    try {
+      const response = await fetch(`/api/tournaments/${code}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: formData.get("firstName"),
+          lastName: formData.get("lastName"),
+          email: formData.get("email"),
+          source: formData.get("source"),
+          deckList: formData.get("deckList"),
+          editToken: defaults?.editToken,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        setError(payload.error ?? "No pudimos guardar la lista.");
+        setValidation(payload.validation ?? null);
+        return;
+      }
+
+      succeeded = true;
+      setResult({ version: payload.version, editUrl: payload.editUrl, mainCount: payload.validation.mainCount, sideboardCount: payload.validation.sideboardCount });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setError("No pudimos conectar con el servidor. Inténtalo nuevamente.");
+    } finally {
+      setLoading(false);
+      if (!succeeded) submissionLocked.current = false;
     }
-    setResult({ version: payload.version, editUrl: payload.editUrl, mainCount: payload.validation.mainCount, sideboardCount: payload.validation.sideboardCount });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   if (result) {
@@ -86,7 +99,7 @@ export function DeckSubmissionForm({
 
       <div className="mt-6 flex flex-col justify-between gap-4 border-t border-foreground/10 pt-6 sm:flex-row sm:items-center">
         <p className="max-w-lg text-xs leading-5 text-muted-foreground">Al enviar, la lista se contrasta carta por carta con Scryfall y las reglas del formato. Una lista ilegal no se guarda.</p>
-        <button disabled={loading} className="pdh-button-primary shrink-0 disabled:cursor-wait disabled:opacity-60">{loading ? <LoaderCircle className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}{loading ? "Validando..." : defaults ? "Guardar nueva version" : "Validar e inscribir"}</button>
+        <button type="submit" disabled={loading} className="pdh-button-primary shrink-0 disabled:cursor-wait disabled:opacity-60">{loading ? <LoaderCircle className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}{loading ? "Validando..." : defaults ? "Guardar nueva version" : "Validar e inscribir"}</button>
       </div>
     </form>
   );

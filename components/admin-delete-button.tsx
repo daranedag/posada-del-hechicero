@@ -1,20 +1,31 @@
 "use client";
 
+import type { ButtonHTMLAttributes } from "react";
 import { Trash2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
 export function AdminDeleteButton({
   label = "Eliminar",
   confirmationMessage = "¿Confirmas que quieres eliminar este contenido?",
+  formAction,
+  name,
+  value,
 }: {
   label?: string;
   confirmationMessage?: string;
+  formAction?: ButtonHTMLAttributes<HTMLButtonElement>["formAction"];
+  name?: string;
+  value?: string;
 }) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
+      formAction={formAction}
+      formNoValidate
+      name={name}
+      value={value}
       onClick={(event) => {
         if (!window.confirm(confirmationMessage)) event.preventDefault();
       }}

@@ -95,6 +95,26 @@ export async function deleteTournamentAction(formData: FormData) {
   redirect("/admin?estado=torneo-eliminado");
 }
 
+export async function deleteTournamentPlayerAction(formData: FormData) {
+  await requireAdmin();
+  const tournamentId = tournamentIdSchema.safeParse(formData.get("tournamentId"));
+  const playerId = tournamentIdSchema.safeParse(formData.get("playerIdToDelete"));
+  if (!tournamentId.success || !playerId.success) redirect("/admin?estado=torneo-error");
+
+  const { data, error } = await adminInsforge.database
+    .from("pdh_players")
+    .delete()
+    .eq("id", playerId.data)
+    .eq("tournament_id", tournamentId.data)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) redirect(`/admin/torneos/${tournamentId.data}?estado=error-jugador`);
+
+  revalidatePath(`/admin/torneos/${tournamentId.data}`);
+  redirect(`/admin/torneos/${tournamentId.data}?estado=jugador-eliminado`);
+}
+
 export async function saveStandingsAction(formData: FormData) {
   await requireAdmin();
   const tournamentId = String(formData.get("tournamentId") ?? "");

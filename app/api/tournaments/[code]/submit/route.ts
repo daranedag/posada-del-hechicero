@@ -125,7 +125,7 @@ export async function POST(request: Request, context: { params: Promise<{ code: 
     success: true,
     version,
     editToken,
-    editUrl: `${baseUrl}/torneos/${tournament.code}/editar/${editToken}`,
+    editUrl: new URL(`/torneos/${tournament.code}/editar/${editToken}`, baseUrl).toString(),
     validation: { mainCount: validation.mainCount, sideboardCount: validation.sideboardCount, warnings: validation.warnings },
   });
 }
