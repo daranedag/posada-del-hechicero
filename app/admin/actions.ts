@@ -99,7 +99,8 @@ export async function deleteTournamentPlayerAction(formData: FormData) {
   await requireAdmin();
   const tournamentId = tournamentIdSchema.safeParse(formData.get("tournamentId"));
   const playerId = tournamentIdSchema.safeParse(formData.get("playerIdToDelete"));
-  if (!tournamentId.success || !playerId.success) redirect("/admin?estado=torneo-error");
+  if (!tournamentId.success) redirect("/admin?estado=jugador-error");
+  if (!playerId.success) redirect(`/admin/torneos/${tournamentId.data}?estado=error-jugador`);
 
   const { data, error } = await adminInsforge.database
     .from("pdh_players")

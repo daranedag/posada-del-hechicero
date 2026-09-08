@@ -33,14 +33,15 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const tournaments = (tournamentData ?? []) as Tournament[];
   const newMessages = contactData?.length ?? 0;
   const { estado } = await searchParams;
+  const operationSucceeded = estado === "torneo-eliminado";
 
   return (
     <section className="pdh-container py-10 sm:py-14">
       <AdminNav />
 
       {estado && (
-        <p className={`mb-6 rounded-lg border p-3 text-sm font-semibold ${estado === "torneo-error" ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200" : "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"}`}>
-          {estado === "torneo-error" ? "No pudimos eliminar el torneo. Inténtalo nuevamente." : "El torneo y todos sus datos asociados fueron eliminados."}
+        <p className={`mb-6 rounded-lg border p-3 text-sm font-semibold ${operationSucceeded ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200" : "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"}`}>
+          {estado === "torneo-eliminado" ? "El torneo y todos sus datos asociados fueron eliminados." : estado === "jugador-error" ? "No pudimos eliminar al participante. Vuelve al torneo e inténtalo nuevamente." : "No pudimos eliminar el torneo. Inténtalo nuevamente."}
         </p>
       )}
 
