@@ -17,6 +17,8 @@ const tournamentSchema = z.object({
   maxPlayers: z.coerce.number().int().min(2).max(1000).optional(),
   notes: z.string().trim().max(3000),
 });
+const tournamentIdSchema = z.string().uuid();
+const tournamentStatusSchema = z.enum(["open", "locked", "completed", "cancelled"]);
 
 function createCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -49,12 +51,48 @@ export async function createTournamentAction(formData: FormData) {
 
 export async function updateTournamentStatusAction(formData: FormData) {
   await requireAdmin();
-  const id = String(formData.get("id") ?? "");
-  const status = String(formData.get("status") ?? "");
-  if (!id || !["open", "locked", "completed", "cancelled"].includes(status)) return;
-  await adminInsforge.database.from("pdh_tournaments").update({ status }).eq("id", id);
-  revalidatePath(`/admin/torneos/${id}`);
+  const id = tournamentIdSchema.safeParse(formData.get("id"));
+  const status = tournamentStatusSchema.safeParse(formData.get("status"));
+  if (!id.success || !status.success) redirect("/admin?estado=torneo-error");
+
+  const { data, error } = await adminInsforge.database
+    .from("pdh_tournaments")
+    .update({ status: status.data })
+    .eq("id", id.data)
+    .select("id,code,status")
+    .maybeSingle();
+
+  const updatedTournament = data as { id: string; code: string; status: string } | null;
+  if (error || !updatedTournament || updatedTournament.status !== status.data) {
+    redirect(`/admin/torneos/${id.data}?estado=error`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/torneos/${id.data}`);
   revalidatePath("/torneos");
+  revalidatePath(`/torneos/${updatedTournament.code}`);
+  redirect(`/admin/torneos/${id.data}?estado=actualizado`);
+}
+
+export async function deleteTournamentAction(formData: FormData) {
+  await requireAdmin();
+  const id = tournamentIdSchema.safeParse(formData.get("id"));
+  if (!id.success) redirect("/admin?estado=torneo-error");
+
+  const { data, error } = await adminInsforge.database
+    .from("pdh_tournaments")
+    .delete()
+    .eq("id", id.data)
+    .select("id,code")
+    .maybeSingle();
+
+  const deletedTournament = data as { id: string; code: string } | null;
+  if (error || !deletedTournament) redirect(`/admin/torneos/${id.data}?estado=error-eliminar`);
+
+  revalidatePath("/admin");
+  revalidatePath("/torneos");
+  revalidatePath(`/torneos/${deletedTournament.code}`);
+  redirect("/admin?estado=torneo-eliminado");
 }
 
 export async function saveStandingsAction(formData: FormData) {

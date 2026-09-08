@@ -34,7 +34,7 @@ export default async function PlayerDecksPage({
 }: {
   params: Promise<{ id: string; playerId: string }>;
 }) {
-  const user = await requireAdmin();
+  await requireAdmin();
   const { id, playerId } = await params;
   const [{ data: tournament }, { data: player }, { data: submissions }] = await Promise.all([
     adminInsforge.database.from("pdh_tournaments").select("id,name,code,format_code").eq("id", id).maybeSingle(),
@@ -54,7 +54,7 @@ export default async function PlayerDecksPage({
 
   return (
     <section className="pdh-container py-10 sm:py-14">
-      <AdminNav name={(user.admin as { display_name?: string }).display_name ?? user.email} />
+      <AdminNav />
       <Link href={`/admin/torneos/${id}`} className="inline-flex items-center gap-2 text-sm font-bold text-teal">
         <ArrowLeft className="size-4" /> Volver al torneo
       </Link>

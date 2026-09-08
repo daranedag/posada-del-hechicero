@@ -3,70 +3,63 @@ import Link from "next/link";
 import {
   ArrowRight,
   AtSign,
-  CheckCircle2,
-  Dice5,
-  Layers3,
+  Clock3,
+  ExternalLink,
+  Globe2,
   MapPin,
+  MessageCircle,
+  Search,
   Sparkles,
-  Trophy,
-  Users,
 } from "lucide-react";
+import { ContactForm } from "@/components/contact-form";
+import {
+  defaultHomeContent,
+  getHomeContent,
+  type SiteItem,
+  type SiteMedia,
+  type SiteSection,
+  type SiteSectionKey,
+} from "@/lib/data/site-content";
 
 export const revalidate = 300;
 
-const worlds = [
-  {
-    href: "/juegos-de-mesa",
-    title: "Juegos de mesa",
-    description: "Estrategia, party games y aventuras para descubrir en grupo.",
-    icon: Dice5,
-    tone: "border-primary/15 bg-secondary text-secondary-foreground",
-  },
-  {
-    href: "/tcg/magic",
-    title: "Magic: The Gathering",
-    description: "Producto sellado, comunidad y juego competitivo reconocido por Wizards of the Coast.",
-    icon: Layers3,
-    tone: "border-white/10 bg-[linear-gradient(135deg,#34204a_0%,#623b91_58%,#a33f82_100%)] text-white",
-  },
-];
+function externalProps(href: string | null) {
+  return href ? { href, target: "_blank" as const, rel: "noreferrer" } : { href: "#contacto" };
+}
 
-const gallery = [
-  {
-    src: "/images/igexport-DctcBb5keDr.jpg",
-    alt: "Afiche de una preventa de Magic: The Gathering en La Posada del Hechicero",
-    label: "Prelanzamientos",
-  },
-  {
-    src: "/images/igexport-DT_pelyFKDm.jpg",
-    alt: "Afiche de un evento de Magic: The Gathering en La Posada del Hechicero",
-    label: "Nuevas colecciones",
-  },
-  {
-    src: "/images/igexport-DYA8_eWluVG.jpg",
-    alt: "Afiche de Store Championship de Magic: The Gathering",
-    label: "Juego competitivo",
-    className: "col-span-2 md:col-span-1",
-  },
-];
+function iconForSocial(item: SiteItem) {
+  const value = `${item.title} ${item.href ?? ""}`.toLowerCase();
+  if (value.includes("instagram")) return AtSign;
+  if (value.includes("facebook")) return AtSign;
+  if (value.includes("whatsapp")) return MessageCircle;
+  return Globe2;
+}
 
-export default function Home() {
-  const instagram =
-    process.env.NEXT_PUBLIC_INSTAGRAM_URL ??
-    "https://www.instagram.com/posada.delhechicero/";
+export default async function Home() {
+  const content = await getHomeContent();
+  const sections = new Map(content.sections.map((section) => [section.key, section]));
+  const fallbackHero = defaultHomeContent.sections.find((section) => section.key === "hero")!;
+  const hero = sections.get("hero") ?? fallbackHero;
+  const heroMedia = content.media.find((media) => media.section_key === "hero");
+
+  const section = (key: SiteSectionKey) => sections.get(key);
+  const items = (key: SiteSectionKey) => content.items.filter((item) => item.section_key === key);
+  const media = (key: SiteSectionKey) => content.media.filter((item) => item.section_key === key);
 
   return (
     <>
       <section className="pdh-container pt-5 sm:pt-8">
         <div className="relative min-h-[680px] overflow-hidden rounded-[1.75rem] bg-[#170d20] text-white shadow-ember sm:min-h-[700px] lg:min-h-[640px]">
-          <Image
-            src="/images/igexport-DMDetjAOfau.jpg"
-            alt="Jugadores reunidos en el local de La Posada del Hechicero en Valdivia"
-            fill
-            preload
-            sizes="(max-width: 1280px) 100vw, 1280px"
-            className="object-cover object-center opacity-80"
-          />
+          {heroMedia && (
+            <Image
+              src={heroMedia.image_url}
+              alt={heroMedia.alt_text || "La Posada del Hechicero"}
+              fill
+              preload
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-cover object-center opacity-80"
+            />
+          )}
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,8,26,.98)_0%,rgba(31,13,46,.9)_38%,rgba(35,11,48,.38)_72%,rgba(18,8,26,.28)_100%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_22%,rgba(213,78,157,.22),transparent_30rem)]" />
 
@@ -87,17 +80,17 @@ export default function Home() {
 
             <div className="py-10 sm:py-7">
               <p className="mb-5 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#f2a5d0]">
-                <Sparkles className="size-4" /> Tu próxima aventura comienza aquí
+                <Sparkles className="size-4" /> {hero.kicker}
               </p>
               <h1 className="max-w-2xl text-balance font-display text-5xl font-semibold leading-[0.92] sm:text-6xl lg:text-7xl">
-                Una mesa. Mil historias.
+                {hero.title}
               </h1>
               <p className="mt-6 max-w-xl text-balance text-base leading-7 text-white/72 sm:text-lg">
-                Juegos de mesa, Magic y torneos para quienes saben que la mejor parte del juego es con quién lo compartes.
+                {hero.body}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/eventos" className="pdh-button-primary bg-[#d64f9d] text-white hover:bg-[#bd3d87]">
-                  Ver próximos eventos <ArrowRight className="size-4" />
+                <Link href="#contacto" className="pdh-button-primary bg-[#d64f9d] text-white hover:bg-[#bd3d87]">
+                  Contáctanos <ArrowRight className="size-4" />
                 </Link>
                 <Link href="/torneos" className="pdh-button-secondary border-white/25 bg-white/10 text-white hover:bg-white/15">
                   Inscribir mi mazo
@@ -107,8 +100,8 @@ export default function Home() {
 
             <div className="grid max-w-2xl grid-cols-2 gap-3 text-sm sm:grid-cols-3">
               {[
-                ["WPN & RCQ", "Juego organizado"],
-                ["4 formatos", "Validación digital"],
+                ["Juegos", "Para todos los gustos"],
+                ["Comunidad", "Mesas y eventos"],
                 ["Local 3", "Aníbal Pinto 1843"],
               ].map(([title, detail]) => (
                 <div key={title} className="rounded-xl border border-white/12 bg-black/25 p-3 backdrop-blur-sm">
@@ -121,125 +114,141 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="pdh-section pdh-container" aria-labelledby="mundos-title">
-        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+      <SocialSection section={section("social")} items={items("social")} media={media("social")} />
+      <AddressSection section={section("address")} items={items("address")} media={media("address")} />
+      <HoursSection section={section("hours")} items={items("hours")} />
+      <GameRequestSection section={section("game_request")} items={items("game_request")} media={media("game_request")} />
+      <ContactSection section={section("contact")} />
+    </>
+  );
+}
+
+function SocialSection({ section, items, media }: { section?: SiteSection; items: SiteItem[]; media: SiteMedia[] }) {
+  if (!section) return null;
+  return (
+    <section id="redes" className="pdh-section pdh-container scroll-mt-28" aria-labelledby="social-title">
+      <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr] lg:items-stretch">
+        <div className="flex flex-col justify-between rounded-[1.4rem] bg-primary p-8 text-primary-foreground sm:p-10">
           <div>
-            <p className="pdh-kicker">Elige tu mesa</p>
-            <h2 id="mundos-title" className="mt-4 max-w-2xl text-balance text-4xl leading-none sm:text-5xl">
-              Siempre hay algo nuevo por jugar.
-            </h2>
-          </div>
-          <p className="max-w-md text-sm leading-6 text-muted-foreground">
-            Explora juegos, conoce la comunidad de Magic y reserva un lugar en la próxima fecha.
-          </p>
-        </div>
-
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {worlds.map(({ href, title, description, icon: Icon, tone }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`group flex min-h-72 flex-col justify-between rounded-[1.4rem] border p-7 transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-8 ${tone}`}
-            >
-              <span className="grid size-12 place-items-center rounded-full border border-current/20 bg-white/10">
-                <Icon className="size-5" />
-              </span>
-              <div>
-                <h3 className="text-3xl leading-none sm:text-4xl">{title}</h3>
-                <p className="mt-3 max-w-lg text-sm leading-6 opacity-75">{description}</p>
-                <span className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em]">
-                  Descubrir <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="border-y border-white/10 bg-[#1b1025] text-[#faf3fc]">
-        <div className="pdh-container grid gap-10 py-16 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-20">
-          <div>
-            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#f08ac3]">
-              <Trophy className="size-4" /> Torneos sin papeleo
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] opacity-70">
+              <AtSign className="size-4" /> {section.kicker}
             </p>
-            <h2 className="mt-4 max-w-xl text-balance text-4xl leading-none sm:text-5xl">
-              Tu decklist, validada antes de sentarte a jugar.
-            </h2>
-            <p className="mt-5 max-w-xl text-base leading-7 text-white/62">
-              Pega tu lista desde Moxfield, ManaBox, Arena o texto. El sistema revisa cada carta, el formato y el sideboard con datos de Scryfall.
-            </p>
-            <Link href="/torneos" className="mt-7 inline-flex items-center gap-2 font-bold text-[#f29dcd]">
-              Ir al portal de torneos <ArrowRight className="size-4" />
-            </Link>
+            <h2 id="social-title" className="mt-5 text-balance text-4xl leading-none sm:text-5xl">{section.title}</h2>
+            <p className="mt-5 text-sm leading-7 opacity-75">{section.body}</p>
           </div>
-          <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.055] p-6 shadow-[0_24px_70px_-38px_rgba(213,79,157,.8)] sm:p-8">
-            <div className="flex items-center justify-between border-b border-white/10 pb-5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.15em] text-white/45">Validación automática</p>
-                <p className="mt-1 font-display text-2xl">Pioneer · Lista #03</p>
-              </div>
-              <span className="rounded-full bg-[#c697ec]/15 px-3 py-1.5 text-xs font-bold text-[#d9b5f4]">Lista legal</span>
-            </div>
-            <div className="mt-6 grid gap-3">
-              {[
-                ["60 cartas en el mazo principal", "Cumple"],
-                ["15 cartas en el sideboard", "Cumple"],
-                ["Legalidad y cartas prohibidas", "Verificado"],
-              ].map(([label, status]) => (
-                <div key={label} className="flex items-center justify-between gap-4 rounded-lg bg-black/15 px-4 py-3 text-sm">
-                  <span className="flex items-center gap-3 text-white/72">
-                    <CheckCircle2 className="size-4 text-[#d993c3]" />
-                    {label}
-                  </span>
-                  <span className="text-xs font-bold text-white/45">{status}</span>
-                </div>
-              ))}
-            </div>
+          <div className="mt-10 grid gap-3">
+            {items.map((item) => {
+              const Icon = iconForSocial(item);
+              return (
+                <a key={item.id} {...externalProps(item.href)} className="group flex items-center justify-between gap-4 rounded-xl border border-white/15 bg-white/10 px-4 py-3 font-bold transition hover:bg-white/15">
+                  <span className="flex items-center gap-3"><Icon className="size-4" /> <span><span className="block text-sm">{item.title}</span><span className="block text-xs font-medium opacity-65">{item.body}</span></span></span>
+                  <ExternalLink className="size-4 opacity-55 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </a>
+              );
+            })}
           </div>
         </div>
-      </section>
 
-      <section className="pdh-section pdh-container" aria-labelledby="comunidad-title">
-        <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr] lg:items-stretch">
-          <div className="flex flex-col justify-between rounded-[1.4rem] bg-primary p-8 text-primary-foreground sm:p-10">
-            <div>
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] opacity-70">
-                <Users className="size-4" /> Comunidad en movimiento
-              </p>
-              <h2 id="comunidad-title" className="mt-5 text-4xl leading-none sm:text-5xl">
-                Así se vive la Posada.
-              </h2>
-              <p className="mt-5 text-sm leading-7 opacity-75">
-                Preventas, lanzamientos y torneos que convierten cada visita en una historia para compartir.
-              </p>
-            </div>
-            <a href={instagram} target="_blank" rel="noreferrer" className="mt-10 inline-flex items-center gap-2 font-bold">
-              <AtSign className="size-4" /> Ver novedades en Instagram
-            </a>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {gallery.map((item) => (
-              <figure
-                key={item.src}
-                className={`group relative aspect-[4/5] overflow-hidden rounded-[1.25rem] bg-muted ${item.className ?? ""}`}
-              >
-                <Image
-                  src={item.src}
-                  alt={item.alt}
-                  fill
-                  sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 22vw"
-                  className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                />
-                <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#180b20] to-transparent" />
-                <figcaption className="absolute inset-x-0 bottom-0 p-4 text-sm font-bold text-white">
-                  {item.label}
-                </figcaption>
+        {media.length > 0 && (
+          <div className={`grid gap-4 ${media.length === 1 ? "grid-cols-1" : "grid-cols-2 md:grid-cols-3"}`}>
+            {media.map((item, index) => (
+              <figure key={item.id} className={`group relative min-h-80 overflow-hidden rounded-[1.25rem] bg-muted ${media.length > 1 && index === media.length - 1 && media.length % 3 === 0 ? "col-span-2 md:col-span-1" : ""}`}>
+                <Image src={item.image_url} alt={item.alt_text || item.caption || section.title} fill sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 24vw" className="object-cover transition duration-500 group-hover:scale-[1.03]" />
+                {item.caption && <><div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#180b20] to-transparent" /><figcaption className="absolute inset-x-0 bottom-0 p-4 text-sm font-bold text-white">{item.caption}</figcaption></>}
               </figure>
             ))}
           </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function AddressSection({ section, items, media }: { section?: SiteSection; items: SiteItem[]; media: SiteMedia[] }) {
+  if (!section) return null;
+  return (
+    <section id="direccion" className="scroll-mt-28 border-y border-white/10 bg-[#1b1025] text-[#faf3fc]" aria-labelledby="address-title">
+      <div className="pdh-container grid gap-8 py-16 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-20">
+        <div>
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#f08ac3]"><MapPin className="size-4" /> {section.kicker}</p>
+          <h2 id="address-title" className="mt-4 max-w-2xl text-balance text-4xl leading-none sm:text-5xl">{section.title}</h2>
+          <p className="mt-5 max-w-xl text-base leading-7 text-white/62">{section.body}</p>
+          <div className="mt-8 grid gap-3">
+            {items.map((item) => (
+              <a key={item.id} {...externalProps(item.href)} className="group flex max-w-xl items-center gap-4 rounded-xl border border-white/10 bg-white/[0.055] p-4 transition hover:bg-white/10">
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#d64f9d]/15 text-[#f3a8d2]"><MapPin className="size-5" /></span>
+                <span><span className="block font-bold">{item.title}</span><span className="mt-1 block text-sm text-white/60">{item.body}</span></span>
+                <ArrowRight className="ml-auto size-4 shrink-0 text-white/40 transition group-hover:translate-x-1" />
+              </a>
+            ))}
+          </div>
         </div>
-      </section>
-    </>
+        <div className="relative min-h-80 overflow-hidden rounded-[1.4rem] border border-white/10 bg-[radial-gradient(circle_at_50%_20%,rgba(214,79,157,.28),transparent_50%),linear-gradient(145deg,#352047,#24132f)]">
+          {media[0] ? <Image src={media[0].image_url} alt={media[0].alt_text || section.title} fill sizes="(max-width: 1023px) 100vw, 45vw" className="object-cover opacity-80" /> : <div className="absolute inset-0 grid place-items-center p-8 text-center"><div><span className="mx-auto grid size-20 place-items-center rounded-full border border-white/15 bg-white/10"><MapPin className="size-8 text-[#f08ac3]" /></span><p className="mt-5 font-display text-3xl">Valdivia</p><p className="mt-2 text-sm text-white/50">Aníbal Pinto 1843 · Local 3</p></div></div>}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HoursSection({ section, items }: { section?: SiteSection; items: SiteItem[] }) {
+  if (!section) return null;
+  return (
+    <section id="horarios" className="pdh-section pdh-container scroll-mt-28" aria-labelledby="hours-title">
+      <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+        <div>
+          <p className="pdh-kicker"><Clock3 className="size-4" /> {section.kicker}</p>
+          <h2 id="hours-title" className="mt-4 text-balance text-4xl leading-none sm:text-5xl">{section.title}</h2>
+          <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">{section.body}</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {items.map((item) => {
+            const content = <><span className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary text-primary"><Clock3 className="size-5" /></span><span><span className="block font-bold">{item.title}</span><span className="mt-1 block text-sm leading-6 text-muted-foreground">{item.body}</span></span>{item.href && <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground" />}</>;
+            return item.href ? <a key={item.id} {...externalProps(item.href)} className="pdh-panel flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:border-copper/40">{content}</a> : <div key={item.id} className="pdh-panel flex items-center gap-4 p-5">{content}</div>;
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GameRequestSection({ section, items, media }: { section?: SiteSection; items: SiteItem[]; media: SiteMedia[] }) {
+  if (!section) return null;
+  const action = items[0];
+  return (
+    <section id="buscar-juego" className="pdh-container scroll-mt-28 pb-16 sm:pb-24" aria-labelledby="game-request-title">
+      <div className="relative overflow-hidden rounded-[1.5rem] bg-[linear-gradient(125deg,#4e2877_0%,#8f326d_100%)] p-8 text-white shadow-ember sm:p-12">
+        {media[0] && <Image src={media[0].image_url} alt={media[0].alt_text || ""} fill sizes="100vw" className="object-cover opacity-20 mix-blend-luminosity" />}
+        <div className="absolute -right-24 -top-24 size-80 rounded-full border border-white/10" />
+        <div className="absolute -bottom-32 right-24 size-72 rounded-full bg-[#d64f9d]/25 blur-3xl" />
+        <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#f3b4d7]"><Search className="size-4" /> {section.kicker}</p>
+            <h2 id="game-request-title" className="mt-4 max-w-3xl text-balance text-4xl leading-none sm:text-5xl">{section.title}</h2>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-white/68">{section.body}</p>
+            {action?.body && <p className="mt-3 max-w-2xl text-sm text-white/50">{action.body}</p>}
+          </div>
+          <a {...externalProps(action?.href ?? null)} className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-bold text-[#4e2877] shadow-lg transition hover:-translate-y-0.5 hover:bg-[#fff7fb]">
+            <MessageCircle className="size-4" /> {action?.title || "Contáctanos"}
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ContactSection({ section }: { section?: SiteSection }) {
+  if (!section) return null;
+  return (
+    <section id="contacto" className="scroll-mt-28 border-t border-foreground/10 bg-card/45" aria-labelledby="contact-title">
+      <div className="pdh-container grid gap-10 py-16 lg:grid-cols-[0.72fr_1.28fr] lg:items-start lg:py-24">
+        <div className="lg:sticky lg:top-32">
+          <p className="pdh-kicker"><MessageCircle className="size-4" /> {section.kicker}</p>
+          <h2 id="contact-title" className="mt-4 text-balance text-4xl leading-none sm:text-5xl">{section.title}</h2>
+          <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">{section.body}</p>
+        </div>
+        <ContactForm />
+      </div>
+    </section>
   );
 }
