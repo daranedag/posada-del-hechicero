@@ -1,3 +1,5 @@
+import { normalizeCardName } from "./card-name.ts";
+
 export type DeckBoard = "main" | "sideboard";
 
 export interface ParsedDeckCard {
@@ -12,8 +14,8 @@ export interface ParsedDeck {
   sideboardCount: number;
 }
 
-const sideboardHeaders = /^(sideboard|side board|side|companion|companions)$/i;
-const mainHeaders = /^(deck|mainboard|main board|main deck|maindeck|main)$/i;
+const sideboardHeaders = /^(sideboard|side board|side|companion|companions|banquillo|reserva|acompa(?:n|ñ)ante)$/i;
+const mainHeaders = /^(deck|mainboard|main board|main deck|maindeck|main|mazo|mazo principal|principal)$/i;
 const categoryHeader = /^(creatures?|lands?|spells?|instants?|sorceries|enchantments?|artifacts?|planeswalkers?|battles?|other)(\s*\(\d+\))?:?$/i;
 
 function cleanCardName(rawName: string) {
@@ -42,9 +44,9 @@ export function parseDeckList(raw: string): ParsedDeck {
     }
     if (categoryHeader.test(line)) continue;
 
-    if (/^(SB|SIDEBOARD):\s*/i.test(line)) {
+    if (/^(SB|SIDEBOARD|BANQUILLO|RESERVA):\s*/i.test(line)) {
       currentBoard = "sideboard";
-      line = line.replace(/^(SB|SIDEBOARD):\s*/i, "");
+      line = line.replace(/^(SB|SIDEBOARD|BANQUILLO|RESERVA):\s*/i, "");
     }
 
     const match = line.match(/^(\d{1,3})\s*[xX]?\s+(.+)$/);
@@ -54,7 +56,7 @@ export function parseDeckList(raw: string): ParsedDeck {
     const name = cleanCardName(match[2]);
     if (!name || quantity < 1 || quantity > 999) continue;
 
-    const key = `${currentBoard}:${name.toLocaleLowerCase("en")}`;
+    const key = `${currentBoard}:${normalizeCardName(name)}`;
     const previous = aggregated.get(key);
     if (previous) previous.quantity += quantity;
     else aggregated.set(key, { board: currentBoard, quantity, name });

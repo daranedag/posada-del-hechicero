@@ -31,3 +31,15 @@ test("conserva nombres de cartas de doble cara", () => {
   const result = parseDeckList("4 Fire // Ice\n56 Island");
   assert.equal(result.cards[0].name, "Fire // Ice");
 });
+
+test("reconoce encabezados de mazo y banquillo en español", () => {
+  const result = parseDeckList(`Mazo
+60 Bosque
+
+Banquillo
+15 Montaña`);
+
+  assert.equal(result.mainCount, 60);
+  assert.equal(result.sideboardCount, 15);
+  assert.deepEqual(result.cards[1], { board: "sideboard", quantity: 15, name: "Montaña" });
+});

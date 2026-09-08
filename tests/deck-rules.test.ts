@@ -57,3 +57,25 @@ test("respeta excepciones de cantidad declaradas por la carta", () => {
   );
   assert.equal(result.valid, true);
 });
+
+test("suma las copias escritas en inglés y español usando el mismo oracle_id", () => {
+  const forest = card("Forest", { type_line: "Basic Land — Forest" });
+  const bolt = card("Lightning Bolt");
+  const result = evaluateDeckRules(
+    parsed([
+      { board: "main", quantity: 55, name: "Forest" },
+      { board: "main", quantity: 3, name: "Lightning Bolt" },
+      { board: "main", quantity: 2, name: "Relámpago" },
+    ]),
+    pioneer,
+    new Map([
+      ["forest", forest],
+      ["lightning bolt", bolt],
+      ["relampago", bolt],
+    ]),
+  );
+
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((error) => error.includes("Lightning Bolt: 5 copias")));
+  assert.deepEqual(result.cards.map((item) => item.card_name), ["Forest", "Lightning Bolt", "Lightning Bolt"]);
+});

@@ -1,3 +1,4 @@
+import { findCardByName } from "./card-name.ts";
 import type { ParsedDeck } from "./deck-parser.ts";
 import type { ScryfallCard } from "./scryfall.ts";
 import type { TournamentFormat } from "../types.ts";
@@ -32,13 +33,6 @@ function allowedCopies(typeLine: string, oracleText: string | undefined, default
   return defaultMaximum;
 }
 
-function findCard(cards: Map<string, ScryfallCard>, requestedName: string) {
-  const normalized = requestedName.toLocaleLowerCase("en");
-  const exact = cards.get(normalized);
-  if (exact) return exact;
-  return [...cards.values()].find((card) => card.name.split(" // ").some((face) => face.toLocaleLowerCase("en") === normalized));
-}
-
 export function evaluateDeckRules(
   parsed: ParsedDeck,
   format: TournamentFormat,
@@ -56,7 +50,7 @@ export function evaluateDeckRules(
 
   const totalsByOracle = new Map<string, { name: string; quantity: number; maximum: number }>();
   for (const parsedCard of parsed.cards) {
-    const card = findCard(scryfallCards, parsedCard.name);
+    const card = findCardByName(scryfallCards, parsedCard.name);
     if (!card) continue;
     const legality = card.legalities[format.scryfall_key] ?? "not_legal";
     if (legality !== "legal") errors.push(`${card.name} figura como ${legality === "banned" ? "prohibida" : "no legal"} en ${format.label}.`);
