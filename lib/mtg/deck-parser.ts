@@ -8,8 +8,14 @@ export interface ParsedDeckCard {
   name: string;
 }
 
+export interface ParsedDeckLine {
+  lineNumber: number;
+  name: string;
+}
+
 export interface ParsedDeck {
   cards: ParsedDeckCard[];
+  cardLines: ParsedDeckLine[];
   mainCount: number;
   sideboardCount: number;
 }
@@ -29,8 +35,10 @@ function cleanCardName(rawName: string) {
 export function parseDeckList(raw: string): ParsedDeck {
   let currentBoard: DeckBoard = "main";
   const aggregated = new Map<string, ParsedDeckCard>();
+  const cardLines: ParsedDeckLine[] = [];
+  const lines = raw.replace(/^\uFEFF/, "").split(/\r?\n/);
 
-  for (const originalLine of raw.replace(/^\uFEFF/, "").split(/\r?\n/)) {
+  for (const [lineIndex, originalLine] of lines.entries()) {
     let line = originalLine.trim();
     if (!line || line.startsWith("#") || line.startsWith("// ")) continue;
 
@@ -56,6 +64,7 @@ export function parseDeckList(raw: string): ParsedDeck {
     const name = cleanCardName(match[2]);
     if (!name || quantity < 1 || quantity > 999) continue;
 
+    cardLines.push({ lineNumber: lineIndex + 1, name });
     const key = `${currentBoard}:${normalizeCardName(name)}`;
     const previous = aggregated.get(key);
     if (previous) previous.quantity += quantity;
@@ -65,6 +74,7 @@ export function parseDeckList(raw: string): ParsedDeck {
   const cards = [...aggregated.values()];
   return {
     cards,
+    cardLines,
     mainCount: cards.filter((card) => card.board === "main").reduce((sum, card) => sum + card.quantity, 0),
     sideboardCount: cards.filter((card) => card.board === "sideboard").reduce((sum, card) => sum + card.quantity, 0),
   };

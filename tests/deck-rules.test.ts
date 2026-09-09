@@ -15,6 +15,7 @@ function card(name: string, options: Partial<ScryfallCard> = {}): ScryfallCard {
 function parsed(cards: ParsedDeckCard[]) {
   return {
     cards,
+    cardLines: cards.map((item, index) => ({ lineNumber: index + 1, name: item.name })),
     mainCount: cards.filter((item) => item.board === "main").reduce((sum, item) => sum + item.quantity, 0),
     sideboardCount: cards.filter((item) => item.board === "sideboard").reduce((sum, item) => sum + item.quantity, 0),
   };
@@ -78,4 +79,16 @@ test("suma las copias escritas en inglés y español usando el mismo oracle_id",
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((error) => error.includes("Lightning Bolt: 5 copias")));
   assert.deepEqual(result.cards.map((item) => item.card_name), ["Forest", "Lightning Bolt", "Lightning Bolt"]);
+});
+
+test("informa el nombre y las líneas de las cartas no encontradas", () => {
+  const deck = parsed([
+    { board: "main", quantity: 56, name: "Forest" },
+    { board: "main", quantity: 4, name: "Carta Inventada" },
+  ]);
+  deck.cardLines.push({ lineNumber: 8, name: "Carta Inventada" });
+
+  const result = evaluateDeckRules(deck, pioneer, new Map(), ["Carta Inventada"]);
+
+  assert.deepEqual(result.notFoundCards, [{ name: "Carta Inventada", lineNumbers: [2, 8] }]);
 });

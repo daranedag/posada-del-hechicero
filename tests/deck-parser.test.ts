@@ -43,3 +43,18 @@ Banquillo
   assert.equal(result.sideboardCount, 15);
   assert.deepEqual(result.cards[1], { board: "sideboard", quantity: 15, name: "Montaña" });
 });
+
+test("conserva las líneas de origen de cada carta para señalar errores", () => {
+  const result = parseDeckList(`Deck
+4 Consider
+4 Carta Inventada (TST) 12
+
+Sideboard
+2 Carta Inventada`);
+
+  assert.deepEqual(result.cardLines, [
+    { lineNumber: 2, name: "Consider" },
+    { lineNumber: 3, name: "Carta Inventada" },
+    { lineNumber: 6, name: "Carta Inventada" },
+  ]);
+});

@@ -19,6 +19,7 @@ const tournamentSchema = z.object({
 });
 const tournamentIdSchema = z.string().uuid();
 const tournamentStatusSchema = z.enum(["open", "locked", "completed", "cancelled"]);
+const deadlineSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 
 function createCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -36,7 +37,6 @@ export async function createTournamentAction(formData: FormData) {
 
   const startsAt = chileLocalToIso(input.data.startsAt);
   const deadline = chileLocalToIso(input.data.deadline);
-  if (new Date(deadline) > new Date(startsAt)) redirect("/admin/torneos/nuevo?error=fecha");
 
   const code = createCode();
   const { data, error } = await adminInsforge.database.from("pdh_tournaments").insert([{
@@ -72,6 +72,38 @@ export async function updateTournamentStatusAction(formData: FormData) {
   revalidatePath("/torneos");
   revalidatePath(`/torneos/${updatedTournament.code}`);
   redirect(`/admin/torneos/${id.data}?estado=actualizado`);
+}
+
+export async function updateTournamentDeadlineAction(formData: FormData) {
+  await requireAdmin();
+  const id = tournamentIdSchema.safeParse(formData.get("id"));
+  if (!id.success) redirect("/admin?estado=torneo-error");
+
+  const deadlineInput = deadlineSchema.safeParse(formData.get("deadline"));
+  if (!deadlineInput.success) redirect(`/admin/torneos/${id.data}?estado=error-cierre`);
+  const deadline = chileLocalToIso(deadlineInput.data);
+
+  const { data, error } = await adminInsforge.database
+    .from("pdh_tournaments")
+    .update({ submission_deadline: deadline })
+    .eq("id", id.data)
+    .select("id,code,submission_deadline")
+    .maybeSingle();
+
+  const updatedTournament = data as { id: string; code: string; submission_deadline: string } | null;
+  if (
+    error
+    || !updatedTournament
+    || new Date(updatedTournament.submission_deadline).getTime() !== new Date(deadline).getTime()
+  ) {
+    redirect(`/admin/torneos/${id.data}?estado=error-cierre`);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/torneos/${id.data}`);
+  revalidatePath("/torneos");
+  revalidatePath(`/torneos/${updatedTournament.code}`);
+  redirect(`/admin/torneos/${id.data}?estado=cierre-actualizado`);
 }
 
 export async function deleteTournamentAction(formData: FormData) {

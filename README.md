@@ -55,6 +55,7 @@ Las migraciones reproducibles están en `migrations/`:
 - `20260830224000_pdh-site-settings.sql`: contenido editable e imagen principal.
 - `20260830233000_pdh-public-demo-content.sql`: evento público confirmado usado en la demostración.
 - `20260904010000_pdh-site-content.sql`: secciones de la portada, textos repetibles, fotografías, consultas y políticas RLS.
+- `20260909010000_allow-deadline-after-start.sql`: permite definir el cierre de listas antes o después del inicio del torneo.
 
 El modelo editorial usa exclusivamente tablas con prefijo `pdh_`:
 

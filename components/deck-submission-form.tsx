@@ -1,9 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { CheckCircle2, Clipboard, LoaderCircle, ShieldAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type Validation = { errors?: string[]; warnings?: string[]; mainCount?: number; sideboardCount?: number };
+type Validation = {
+  errors?: string[];
+  warnings?: string[];
+  notFoundCards?: Array<{ name: string; lineNumbers: number[] }>;
+  mainCount?: number;
+  sideboardCount?: number;
+};
 
 export function DeckSubmissionForm({
   code,
@@ -13,13 +20,17 @@ export function DeckSubmissionForm({
   defaults?: { firstName: string; lastName: string; email: string; source: string; deckList: string; editToken: string };
 }) {
   const submissionLocked = useRef(false);
+  const deckListRef = useRef<HTMLTextAreaElement>(null);
   const [loading, setLoading] = useState(false);
+  const [deckList, setDeckList] = useState(defaults?.deckList ?? "");
   const [error, setError] = useState<string | null>(null);
   const [validation, setValidation] = useState<Validation | null>(null);
   const [result, setResult] = useState<{ version: number; editUrl: string; mainCount: number; sideboardCount: number } | null>(null);
 
-  async function submit(formData: FormData) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (submissionLocked.current) return;
+    const formData = new FormData(event.currentTarget);
     submissionLocked.current = true;
     setLoading(true);
     setError(null);
@@ -57,6 +68,21 @@ export function DeckSubmissionForm({
     }
   }
 
+  function selectDeckLine(lineNumber: number) {
+    const textarea = deckListRef.current;
+    if (!textarea) return;
+
+    const lines = deckList.split("\n");
+    const start = lines.slice(0, lineNumber - 1).reduce((length, line) => length + line.length + 1, 0);
+    const end = start + (lines[lineNumber - 1]?.replace(/\r$/, "").length ?? 0);
+    textarea.focus();
+    textarea.setSelectionRange(start, end);
+  }
+
+  const notFoundCards = validation?.notFoundCards ?? [];
+  const notFoundMessages = new Set(notFoundCards.map(({ name }) => `No encontramos la carta "${name}" en Scryfall.`));
+  const otherValidationErrors = validation?.errors?.filter((item) => !notFoundMessages.has(item)) ?? [];
+
   if (result) {
     return (
       <div className="pdh-panel p-7 sm:p-10">
@@ -76,7 +102,7 @@ export function DeckSubmissionForm({
   }
 
   return (
-    <form action={submit} className="pdh-panel p-6 sm:p-8">
+    <form onSubmit={submit} className="pdh-panel p-6 sm:p-8">
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="grid gap-2"><span className="pdh-label">Nombre</span><input name="firstName" required maxLength={80} defaultValue={defaults?.firstName} className="pdh-input" autoComplete="given-name" /></label>
         <label className="grid gap-2"><span className="pdh-label">Apellido</span><input name="lastName" required maxLength={120} defaultValue={defaults?.lastName} className="pdh-input" autoComplete="family-name" /></label>
@@ -87,13 +113,49 @@ export function DeckSubmissionForm({
       </div>
       <label className="mt-5 grid gap-2">
         <span className="pdh-label">Decklist</span>
-        <textarea name="deckList" required minLength={20} maxLength={100000} defaultValue={defaults?.deckList} className="min-h-[380px] w-full rounded-xl border border-input bg-background p-4 font-mono text-sm leading-6 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20" placeholder={"Deck\n4 Opt (XLN) 65\n4 Consider\n...\n\nSideboard\n2 Negate\n..."} />
+        <textarea
+          ref={deckListRef}
+          name="deckList"
+          required
+          minLength={20}
+          maxLength={100000}
+          value={deckList}
+          onChange={(event) => setDeckList(event.target.value)}
+          aria-invalid={notFoundCards.length > 0}
+          aria-describedby={notFoundCards.length ? "decklist-card-errors" : undefined}
+          className={cn(
+            "min-h-[380px] w-full rounded-xl border border-input bg-background p-4 font-mono text-sm leading-6 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20",
+            notFoundCards.length && "border-red-400 bg-red-50/40 focus:border-red-500 focus:ring-red-500/20 dark:bg-red-950/10",
+          )}
+          placeholder={"Deck\n4 Opt (XLN) 65\n4 Consider\n...\n\nSideboard\n2 Negate\n..."}
+        />
       </label>
 
-      {error && (
+      {!!notFoundCards.length && (
+        <div id="decklist-card-errors" className="mt-5 rounded-xl border border-red-300 bg-red-50 p-5 text-red-950 dark:border-red-900 dark:bg-red-950/30 dark:text-red-100" role="alert">
+          <p className="flex items-center gap-2 font-bold"><ShieldAlert className="size-5" /> {notFoundCards.length === 1 ? "Hay una carta que debes corregir" : `Hay ${notFoundCards.length} cartas que debes corregir`}</p>
+          <p className="mt-2 text-sm leading-5">Tu decklist se conservó completa. Selecciona una línea para ir directamente a la carta.</p>
+          <ul className="mt-4 grid gap-3">
+            {notFoundCards.map((card) => (
+              <li key={card.name} className="rounded-lg border border-red-200 bg-white/70 p-3 dark:border-red-900 dark:bg-red-950/30">
+                <p className="font-mono text-sm font-bold">{card.name}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {card.lineNumbers.length ? card.lineNumbers.map((lineNumber) => (
+                    <button key={lineNumber} type="button" onClick={() => selectDeckLine(lineNumber)} className="rounded-full border border-red-300 px-3 py-1 text-xs font-bold transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-800 dark:hover:bg-red-900/50">
+                      Ir a la línea {lineNumber}
+                    </button>
+                  )) : <span className="text-xs">Busca este nombre en la lista.</span>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {error && (!notFoundCards.length || otherValidationErrors.length > 0) && (
         <div className="mt-5 rounded-xl border border-red-300 bg-red-50 p-5 text-red-950">
           <p className="flex items-center gap-2 font-bold"><ShieldAlert className="size-5" /> {error}</p>
-          {!!validation?.errors?.length && <ul className="mt-3 grid gap-2 pl-5 text-sm leading-5">{validation.errors.map((item) => <li key={item} className="list-disc">{item}</li>)}</ul>}
+          {!!otherValidationErrors.length && <ul className="mt-3 grid gap-2 pl-5 text-sm leading-5">{otherValidationErrors.map((item) => <li key={item} className="list-disc">{item}</li>)}</ul>}
         </div>
       )}
 

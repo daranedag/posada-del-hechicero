@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth/admin";
 
 export const metadata = { title: "Crear torneo" };
 
-const errors: Record<string, string> = { datos: "Revisa los datos obligatorios.", fecha: "El cierre de listas no puede ser posterior al inicio del torneo.", guardar: "No pudimos crear el torneo." };
+const errors: Record<string, string> = { datos: "Revisa los datos obligatorios.", guardar: "No pudimos crear el torneo." };
 
 export default async function NewTournamentPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   await requireAdmin();
@@ -22,7 +22,7 @@ export default async function NewTournamentPage({ searchParams }: { searchParams
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="grid gap-2"><span className="pdh-label">Inicio del torneo</span><input name="startsAt" type="datetime-local" required className="pdh-input" /></label>
-            <label className="grid gap-2"><span className="pdh-label">Cierre de listas</span><input name="deadline" type="datetime-local" required className="pdh-input" /></label>
+            <label className="grid gap-2"><span className="pdh-label">Cierre de listas</span><input name="deadline" type="datetime-local" required className="pdh-input" /><span className="text-xs leading-5 text-muted-foreground">Puede ser anterior o posterior al inicio del torneo.</span></label>
           </div>
           <label className="grid gap-2"><span className="pdh-label">Lugar</span><input name="location" required defaultValue="La Posada del Hechicero, Aníbal Pinto 1843 Local 3, Valdivia" className="pdh-input" /></label>
           <label className="grid gap-2"><span className="pdh-label">Indicaciones públicas <span className="font-normal text-muted-foreground">(opcional)</span></span><textarea name="notes" maxLength={3000} className="min-h-28 w-full rounded-xl border border-input bg-background p-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20" placeholder="Hora de llegada, requisitos, contacto..." /></label>

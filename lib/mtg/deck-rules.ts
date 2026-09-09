@@ -1,4 +1,4 @@
-import { findCardByName } from "./card-name.ts";
+import { findCardByName, normalizeCardName } from "./card-name.ts";
 import type { ParsedDeck } from "./deck-parser.ts";
 import type { ScryfallCard } from "./scryfall.ts";
 import type { TournamentFormat } from "../types.ts";
@@ -19,6 +19,7 @@ export interface DeckValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
+  notFoundCards: Array<{ name: string; lineNumbers: number[] }>;
   mainCount: number;
   sideboardCount: number;
   cards: ValidatedCard[];
@@ -42,6 +43,15 @@ export function evaluateDeckRules(
   const errors: string[] = [];
   const warnings: string[] = [];
   const validatedCards: ValidatedCard[] = [];
+  const notFoundCards = notFound.map((name) => {
+    const normalizedName = normalizeCardName(name);
+    return {
+      name,
+      lineNumbers: parsed.cardLines
+        .filter((cardLine) => normalizeCardName(cardLine.name) === normalizedName)
+        .map((cardLine) => cardLine.lineNumber),
+    };
+  });
 
   if (!parsed.cards.length) errors.push("No encontramos lineas con el formato 'cantidad nombre de carta'.");
   if (parsed.mainCount < format.min_main_cards) errors.push(`El mazo principal tiene ${parsed.mainCount} cartas; necesita al menos ${format.min_main_cards}.`);
@@ -68,5 +78,5 @@ export function evaluateDeckRules(
   }
   if (parsed.mainCount > 250) warnings.push("El mazo principal es inusualmente grande; confirma que pegaste solo una lista.");
 
-  return { valid: errors.length === 0, errors, warnings, mainCount: parsed.mainCount, sideboardCount: parsed.sideboardCount, cards: validatedCards };
+  return { valid: errors.length === 0, errors, warnings, notFoundCards, mainCount: parsed.mainCount, sideboardCount: parsed.sideboardCount, cards: validatedCards };
 }
