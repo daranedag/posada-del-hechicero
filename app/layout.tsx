@@ -5,19 +5,9 @@ import "@fontsource/cormorant-garamond/600.css";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { ThemeInitializer } from "@/components/theme-initializer";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-const themeScript = `
-  (() => {
-    try {
-      const savedTheme = window.localStorage.getItem("pdh-theme");
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const isDark = savedTheme === "dark" || (!savedTheme && prefersDark);
-      document.documentElement.classList.toggle("dark", isDark);
-      document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-    } catch (_) {}
-  })();
-`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -38,10 +28,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
       <body>
+        <ThemeInitializer />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />

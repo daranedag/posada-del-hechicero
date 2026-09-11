@@ -115,7 +115,7 @@ export default async function Home() {
       </section>
 
       <SocialSection section={section("social")} items={items("social")} media={media("social")} />
-      <AddressSection section={section("address")} items={items("address")} media={media("address")} />
+      <AddressSection section={section("address")} items={items("address")} />
       <HoursSection section={section("hours")} items={items("hours")} />
       <GameRequestSection section={section("game_request")} items={items("game_request")} media={media("game_request")} />
       <ContactSection section={section("contact")} />
@@ -164,7 +164,7 @@ function SocialSection({ section, items, media }: { section?: SiteSection; items
   );
 }
 
-function AddressSection({ section, items, media }: { section?: SiteSection; items: SiteItem[]; media: SiteMedia[] }) {
+function AddressSection({ section, items }: { section?: SiteSection; items: SiteItem[] }) {
   if (!section) return null;
   return (
     <section id="direccion" className="scroll-mt-28 border-y border-white/10 bg-[#1b1025] text-[#faf3fc]" aria-labelledby="address-title">
@@ -183,8 +183,17 @@ function AddressSection({ section, items, media }: { section?: SiteSection; item
             ))}
           </div>
         </div>
-        <div className="relative min-h-80 overflow-hidden rounded-[1.4rem] border border-white/10 bg-[radial-gradient(circle_at_50%_20%,rgba(214,79,157,.28),transparent_50%),linear-gradient(145deg,#352047,#24132f)]">
-          {media[0] ? <Image src={media[0].image_url} alt={media[0].alt_text || section.title} fill sizes="(max-width: 1023px) 100vw, 45vw" className="object-cover opacity-80" /> : <div className="absolute inset-0 grid place-items-center p-8 text-center"><div><span className="mx-auto grid size-20 place-items-center rounded-full border border-white/15 bg-white/10"><MapPin className="size-8 text-[#f08ac3]" /></span><p className="mt-5 font-display text-3xl">Valdivia</p><p className="mt-2 text-sm text-white/50">Aníbal Pinto 1843 · Local 3</p></div></div>}
+        <div className="overflow-hidden rounded-[1.4rem] border border-white/10">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3064.176446798218!2d-73.2425652240182!3d-39.82546147154078!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9615ee659497088b%3A0xa10729fdd10c8e2b!2sAn%C3%ADbal%20Pinto%201843%2C%20Ofi%203%2C%205110986%20Valdivia%2C%20Los%20R%C3%ADos!5e0!3m2!1sen!2scl!4v1789159717021!5m2!1sen!2scl"
+            title="Ubicación de La Posada del Hechicero: Aníbal Pinto 1843, Local 3, Valdivia"
+            width="600"
+            height="450"
+            className="block h-[450px] w-full border-0"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
         </div>
       </div>
     </section>
