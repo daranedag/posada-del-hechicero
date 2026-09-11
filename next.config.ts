@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+const imageKitEndpoint = process.env.IMAGEKIT_URL_ENDPOINT?.trim();
+const imageKitUrl = imageKitEndpoint ? new URL(imageKitEndpoint) : null;
+
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
@@ -8,6 +11,13 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
+      ...(imageKitUrl ? [{
+        protocol: "https" as const,
+        hostname: imageKitUrl.hostname,
+        port: imageKitUrl.port,
+        pathname: `${imageKitUrl.pathname.replace(/\/+$/, "")}/**`,
+        search: "",
+      }] : []),
       {
         protocol: "https",
         hostname: "ik.imagekit.io",

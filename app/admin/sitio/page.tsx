@@ -1,3 +1,4 @@
+import { ImageKitPicker } from "@/components/imagekit-picker";
 import Image from "next/image";
 import { Eye, EyeOff, ImagePlus, Plus, Type } from "lucide-react";
 import { AdminDeleteButton } from "@/components/admin-delete-button";
@@ -178,16 +179,18 @@ export default async function SiteAdminPage({ searchParams }: { searchParams: Pr
                         <div className="relative aspect-[16/9] bg-muted"><Image src={image.image_url} alt={image.alt_text || "Vista previa"} fill sizes="(max-width: 1023px) 100vw, 50vw" className="object-cover" /></div>
                         <form action={updateSiteMediaAction} className="grid gap-4 p-4">
                           <input type="hidden" name="id" value={image.id} />
-                          <label className="pdh-label">Texto alternativo<input className={inputClass} name="altText" defaultValue={image.alt_text} maxLength={300} /></label>
-                          <div className="grid gap-4 sm:grid-cols-[1fr_7rem]">
-                            <label className="pdh-label">Pie de foto<input className={inputClass} name="caption" defaultValue={image.caption} maxLength={180} /></label>
-                            <label className="pdh-label">Orden<input className={inputClass} name="sortOrder" type="number" defaultValue={image.sort_order} min={-1000} max={1000} /></label>
-                          </div>
-                          <div className="flex items-center justify-between gap-4"><label className="pdh-label flex items-center gap-2"><input className="size-4 accent-primary" type="checkbox" name="isVisible" defaultChecked={image.is_visible} /> Visible</label><FormSubmitButton label="Guardar foto" /></div>
+                          <ImageKitPicker currentUrl={image.image_url}>
+                            <label className="pdh-label">Texto alternativo<input className={inputClass} name="altText" defaultValue={image.alt_text} maxLength={300} /></label>
+                            <div className="grid gap-4 sm:grid-cols-[1fr_7rem]">
+                              <label className="pdh-label">Pie de foto<input className={inputClass} name="caption" defaultValue={image.caption} maxLength={180} /></label>
+                              <label className="pdh-label">Orden<input className={inputClass} name="sortOrder" type="number" defaultValue={image.sort_order} min={-1000} max={1000} /></label>
+                            </div>
+                            <div className="flex items-center justify-between gap-4"><label className="pdh-label flex items-center gap-2"><input className="size-4 accent-primary" type="checkbox" name="isVisible" defaultChecked={image.is_visible} /> Visible</label><FormSubmitButton label="Guardar foto" /></div>
+                          </ImageKitPicker>
                         </form>
                         <form action={deleteSiteMediaAction} className="flex justify-end border-t border-foreground/10 p-4 pt-3">
                           <input type="hidden" name="id" value={image.id} />
-                          <AdminDeleteButton label="Eliminar foto" />
+                          <AdminDeleteButton label="Quitar del sitio" />
                         </form>
                       </div>
                     ))}
@@ -195,13 +198,14 @@ export default async function SiteAdminPage({ searchParams }: { searchParams: Pr
                     <form action={uploadSiteMediaAction} className="grid content-start gap-4 rounded-xl border border-dashed border-primary/35 bg-primary/[0.035] p-5">
                       <input type="hidden" name="sectionKey" value={section.key} />
                       <div className="flex items-center gap-2 font-bold"><ImagePlus className="size-4 text-copper" /> Agregar fotografía</div>
-                      <label className="pdh-label">Archivo<input className="mt-2 block w-full text-sm file:mr-4 file:rounded-full file:border-0 file:bg-secondary file:px-4 file:py-2 file:font-bold file:text-secondary-foreground" type="file" name="image" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" required /></label>
-                      <label className="pdh-label">Texto alternativo<input className={inputClass} name="altText" maxLength={300} placeholder="Describe lo que aparece en la imagen" /></label>
-                      <div className="grid gap-4 sm:grid-cols-[1fr_7rem]">
-                        <label className="pdh-label">Pie de foto<input className={inputClass} name="caption" maxLength={180} /></label>
-                        <label className="pdh-label">Orden<input className={inputClass} name="sortOrder" type="number" defaultValue={(sectionMedia.at(-1)?.sort_order ?? 0) + 10} min={-1000} max={1000} /></label>
-                      </div>
-                      <div className="flex justify-end"><FormSubmitButton label="Subir foto" /></div>
+                      <ImageKitPicker>
+                        <label className="pdh-label">Texto alternativo<input className={inputClass} name="altText" maxLength={300} placeholder="Describe lo que aparece en la imagen" /></label>
+                        <div className="grid gap-4 sm:grid-cols-[1fr_7rem]">
+                          <label className="pdh-label">Pie de foto<input className={inputClass} name="caption" maxLength={180} /></label>
+                          <label className="pdh-label">Orden<input className={inputClass} name="sortOrder" type="number" defaultValue={(sectionMedia.at(-1)?.sort_order ?? 0) + 10} min={-1000} max={1000} /></label>
+                        </div>
+                        <div className="flex justify-end"><FormSubmitButton label="Guardar foto" /></div>
+                      </ImageKitPicker>
                     </form>
                   </div>
                 </div>

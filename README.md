@@ -20,7 +20,7 @@ Prototipo comercial y funcional para la tienda de juegos de mesa y TCG de Valdiv
 ## Stack
 
 - Next.js 16, React 19, TypeScript y Tailwind CSS.
-- InsForge para PostgreSQL, autenticación y almacenamiento de imágenes.
+- InsForge para PostgreSQL y autenticación; ImageKit para las nuevas imágenes.
 - Scryfall como fuente de datos y legalidad de cartas.
 - Despliegue previsto en Vercel.
 
@@ -64,7 +64,32 @@ El modelo editorial usa exclusivamente tablas con prefijo `pdh_`:
 - `pdh_site_media`: fotografías por sección; conserva URL y clave de almacenamiento para poder eliminarlas correctamente.
 - `pdh_contact_submissions`: consultas privadas recibidas desde el formulario público.
 
-Las imágenes nuevas se guardan en el bucket público `pdh_media`, bajo la ruta `site/<seccion>/`. El Hero original y su composición visual se mantienen como contenido inicial.
+Las imágenes existentes en InsForge siguen funcionando. Las nuevas imágenes se suben a ImageKit y se vinculan en `pdh_site_media`: `image_url` contiene la URL pública y `image_key` guarda `imagekit:<fileId>`. No se necesita una migración. Quitar o reemplazar una imagen de ImageKit en el sitio conserva el archivo en la biblioteca, porque puede estar usado en otras secciones. Los archivos subidos que todavía no se guardaron también quedan disponibles allí.
+
+## ImageKit en local
+
+Completa estas variables en `.env.local` (ya están documentadas en `.env.example`):
+
+```dotenv
+IMAGEKIT_PUBLIC_KEY=public_...
+IMAGEKIT_PRIVATE_KEY=private_...
+IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/tu_imagekit_id
+IMAGEKIT_UPLOAD_FOLDER=/posada-del-hechicero
+```
+
+Obtén las claves en [ImageKit > Developer options > API keys](https://imagekit.io/docs/api-keys) y copia el URL endpoint de tu cuenta. La clave debe permitir listar, consultar y subir archivos. `IMAGEKIT_UPLOAD_FOLDER` es opcional y usa `/posada-del-hechicero` si no se define. La clave privada nunca se envía al navegador; el servidor autoriza cada subida con una firma temporal de diez minutos. No agregues el prefijo `NEXT_PUBLIC_` a la clave privada.
+
+Reinicia `pnpm dev` después de cambiar las variables: Next.js permite las imágenes del dominio y la ruta de `IMAGEKIT_URL_ENDPOINT`. También admite un dominio personalizado HTTPS configurado en ImageKit.
+
+Para probar:
+
+1. Inicia sesión con un correo de `PDH_ADMIN_EMAILS` y abre `/admin/sitio`.
+2. En Fotografías de una sección, usa **Subir imagen** (JPG, PNG, WebP, AVIF o GIF de hasta 5 MB) o **Explorar ImageKit**. La biblioteca muestra imágenes públicas de toda la cuenta, con búsqueda por nombre y paginación.
+3. Selecciona una imagen y revisa su vista previa y URL. Completa el texto alternativo, pie y orden; pulsa **Guardar foto** para vincularla en la base de datos y verla en la portada.
+4. En una foto existente, selecciona otra imagen y guarda para reemplazarla. **Cancelar selección** conserva la imagen previa.
+5. Comprueba la reutilización en dos secciones: quitarla de una no debe romper la otra.
+
+La subida es directa desde el navegador a ImageKit para evitar el límite de cuerpo de las funciones del alojamiento. Antes de guardar, el servidor vuelve a consultar el archivo por su ID y comprueba que sea una imagen pública compatible; no confía en una URL enviada por el formulario. Si falta configuración o falla ImageKit, la biblioteca muestra el error y permite reintentar.
 
 ## Verificación
 
