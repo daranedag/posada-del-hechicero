@@ -1,12 +1,12 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/admin";
 import { SITE_SECTION_KEYS } from "@/lib/data/site-content";
 import { adminInsforge } from "@/lib/insforge/admin";
+import { getImageKitAsset } from "@/lib/imagekit";
 
 const sectionKeySchema = z.enum(SITE_SECTION_KEYS);
 const itemTypeSchema = z.enum(["social", "address", "hours", "contact", "text"]);
@@ -139,13 +139,14 @@ export async function deleteSiteItemAction(formData: FormData) {
   siteRedirect("eliminado");
 }
 
-const imageExtensions: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/avif": "avif",
-  "image/gif": "gif",
-};
+async function selectedImage(formData: FormData) {
+  const fileId = formData.get("imagekitFileId");
+  if (typeof fileId !== "string" || !fileId) return null;
+  try {
+    const image = await getImageKitAsset(fileId);
+    return { image_url: image.url, image_key: `imagekit:${image.fileId}` };
+  } catch { siteRedirect("error"); }
+}
 
 export async function uploadSiteMediaAction(formData: FormData) {
   await requireAdmin();
@@ -153,33 +154,20 @@ export async function uploadSiteMediaAction(formData: FormData) {
   const altText = z.string().trim().max(300).safeParse(formData.get("altText"));
   const caption = z.string().trim().max(180).safeParse(formData.get("caption"));
   const sortOrder = z.coerce.number().int().min(-1000).max(1000).safeParse(formData.get("sortOrder"));
-  const file = formData.get("image");
-
-  if (
-    !sectionKey.success || !altText.success || !caption.success || !sortOrder.success ||
-    !(file instanceof File) || !file.size || file.size > 5 * 1024 * 1024 ||
-    !imageExtensions[file.type]
-  ) siteRedirect("error");
-
-  const key = `site/${sectionKey.data}/${randomUUID()}.${imageExtensions[file.type]}`;
-  const upload = await adminInsforge.storage.from("pdh_media").upload(key, file);
-  if (upload.error || !upload.data) siteRedirect("error");
-  const uploaded = upload.data;
+  if (!sectionKey.success || !altText.success || !caption.success || !sortOrder.success) siteRedirect("error");
+  const image = await selectedImage(formData);
+  if (!image) siteRedirect("error");
 
   const { error } = await adminInsforge.database.from("pdh_site_media").insert([{
     section_key: sectionKey.data,
-    image_url: uploaded.url,
-    image_key: uploaded.key,
+    ...image,
     alt_text: altText.data,
     caption: caption.data,
     sort_order: sortOrder.data,
     is_visible: true,
   }]);
 
-  if (error) {
-    await adminInsforge.storage.from("pdh_media").remove(uploaded.key);
-    siteRedirect("error");
-  }
+  if (error) siteRedirect("error");
 
   refreshSiteAdmin();
   siteRedirect("guardado");
@@ -193,7 +181,9 @@ export async function updateSiteMediaAction(formData: FormData) {
   const sortOrder = z.coerce.number().int().min(-1000).max(1000).safeParse(formData.get("sortOrder"));
   if (!id.success || !altText.success || !caption.success || !sortOrder.success) siteRedirect("error");
 
+  const image = await selectedImage(formData);
   const { error } = await adminInsforge.database.from("pdh_site_media").update({
+    ...image,
     alt_text: altText.data,
     caption: caption.data,
     sort_order: sortOrder.data,
@@ -221,7 +211,7 @@ export async function deleteSiteMediaAction(formData: FormData) {
   if (error) siteRedirect("error");
 
   const imageKey = (data as { image_key: string | null } | null)?.image_key;
-  if (imageKey) {
+  if (imageKey && !imageKey.startsWith("imagekit:")) {
     const removal = await adminInsforge.storage.from("pdh_media").remove(imageKey);
     if (removal.error) console.error("La imagen se quitó del sitio, pero no del almacenamiento", removal.error);
   }
