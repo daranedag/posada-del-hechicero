@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Globe2, Inbox, LogOut, Plus, Settings2 } from "lucide-react";
+import { CalendarDays, Globe2, Inbox, LogOut, Plus, Settings2 } from "lucide-react";
 import { logoutAction } from "@/app/admin/login/actions";
 
 export function AdminNav() {
@@ -8,6 +8,7 @@ export function AdminNav() {
       <Link href="/admin" className="flex items-center gap-3 font-bold"><span className="grid size-9 place-items-center rounded-full bg-primary text-primary-foreground"><Settings2 className="size-4" /></span>Panel · Posada del Hechicero</Link>
       <div className="flex flex-wrap gap-2">
         <Link href="/admin/sitio" className="pdh-button-secondary h-9 px-4"><Globe2 className="size-4" /> Sitio</Link>
+        <Link href="/admin/eventos" className="pdh-button-secondary h-9 px-4"><CalendarDays className="size-4" /> Eventos</Link>
         <Link href="/admin/consultas" className="pdh-button-secondary h-9 px-4"><Inbox className="size-4" /> Consultas</Link>
         <Link href="/admin/torneos/nuevo" className="pdh-button-primary h-9 px-4"><Plus className="size-4" /> Nuevo torneo</Link>
         <form action={logoutAction}><button className="pdh-button-secondary h-9 px-4"><LogOut className="size-4" /> Salir</button></form>

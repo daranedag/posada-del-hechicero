@@ -101,3 +101,31 @@ pnpm build
 ```
 
 Antes de desplegar en Vercel, copia las mismas variables de entorno, cambia `NEXT_PUBLIC_APP_URL` por el dominio definitivo y autoriza `<dominio>/api/auth/callback` como URL de retorno en la configuración de autenticación de InsForge.
+
+## Calendario de eventos
+
+- `/eventos`: calendario mensual con hoy destacado, detalle por día, actividades habituales y especiales. Los estados se calculan con la hora de Chile. Las consultas copian un mensaje con el nombre, fecha y hora del evento y abren Instagram; el visitante lo pega y envía.
+- `/admin/eventos`: calendario de administración y lista paginada de programaciones, incluidos borradores, historial y cancelaciones. Los eventos son independientes de los torneos y no gestionan inscripciones ni cupos.
+- **Nuevo evento** permite definir fecha, inicio, término (mismo día o siguiente), categoría, descripción, ubicación e imagen opcional mediante la biblioteca de ImageKit. Al duplicar se crea un borrador para revisar antes de publicar.
+- **Repetir semanalmente** admite varios días y una fecha de término opcional. El horario se conserva en `America/Santiago`, incluso al cambiar el horario de verano. Si una hora recurrente no existe durante el cambio de hora, se adelanta una hora; los formularios avisan si se intenta programar directamente una hora inexistente.
+- Al editar una fecha semanal, **Solo esta fecha** crea una excepción; **Esta fecha y las siguientes** divide la programación sin cambiar su historial. Las excepciones posteriores se conservan si todavía pertenecen a la nueva programación. Cancelar una sesión la marca como cancelada; cancelar un evento especial o una programación la retira de la vista pública.
+
+La migración `20260915010000_pdh-event-calendar.sql` agrega campos de repetición a `pdh_events`, la tabla `pdh_event_exceptions` y la función transaccional `pdh_save_calendar_event`. Las escrituras se realizan exclusivamente desde acciones de servidor que verifican al administrador. Los visitantes solo pueden leer información publicada. No se modifican las tablas de torneos.
+
+El backend vinculado usa InsForge 2.0.2: no dispone de ramas ni del gestor nuevo de migraciones. Esta migración se aplicó mediante la CLI con `scripts/insforge-sql.mjs`, después de un ensayo SQL reversible. El script ejecuta todo como una única operación atómica; `--rehearse` revierte tanto esquema como datos de prueba. No vuelvas a aplicar una migración ya aplicada.
+
+Validación:
+
+```sh
+pnpm test
+pnpm lint
+pnpm typecheck
+pnpm build
+# Integración con el backend configurado, sin cambios persistentes:
+pnpm exec node --env-file=.env.local tests/event-calendar-access.mjs
+pnpm exec node scripts/insforge-sql.mjs --rehearse tests/event-calendar-db.sql
+# Con pnpm dev --hostname 127.0.0.1 --port 3100 activo y Chrome en macOS:
+pnpm exec node tests/event-calendar-browser.mjs
+```
+
+La prueba de navegador crea una ruta local temporal con fixtures, comprueba el calendario y el editor sin enviar formularios y la elimina al terminar. Las capturas se guardan en `/tmp/pdh-calendar-*.png`. No crea eventos ni envía mensajes a Instagram.

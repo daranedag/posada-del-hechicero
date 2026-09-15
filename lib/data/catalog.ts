@@ -1,5 +1,5 @@
 import { publicInsforge } from "@/lib/insforge/public";
-import type { GameSystem, Product, StoreEvent, Tournament } from "@/lib/types";
+import type { GameSystem, Product, Tournament } from "@/lib/types";
 
 export async function getProducts(filters: {
   category?: "board-game" | "tcg" | "accessory";
@@ -22,22 +22,6 @@ export async function getProducts(filters: {
     return [];
   }
   return (data ?? []) as Product[];
-}
-
-export async function getUpcomingEvents(): Promise<StoreEvent[]> {
-  const { data, error } = await publicInsforge.database
-    .from("pdh_events")
-    .select("id,slug,title,description,event_type,format_label,starts_at,ends_at,location,capacity,price_clp,registration_url")
-    .eq("status", "published")
-    .gte("starts_at", new Date().toISOString())
-    .order("starts_at", { ascending: true })
-    .limit(24);
-
-  if (error) {
-    console.error("No se pudo cargar el calendario", error);
-    return [];
-  }
-  return (data ?? []) as StoreEvent[];
 }
 
 export async function getPublicTournaments(): Promise<Tournament[]> {

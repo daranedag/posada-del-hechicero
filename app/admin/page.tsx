@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  CalendarDays,
   ClipboardList,
   Globe2,
   Inbox,
@@ -50,10 +51,14 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         <p className="max-w-md text-sm leading-6 text-muted-foreground">Actualiza la portada, revisa el historial de consultas y administra los torneos.</p>
       </div>
 
-      <div className="mt-9 grid gap-4 md:grid-cols-3">
+      <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Link href="/admin/sitio" className="pdh-panel group flex min-h-52 flex-col justify-between p-6 transition hover:-translate-y-1 hover:border-copper/50 hover:shadow-lg">
           <span className="grid size-11 place-items-center rounded-full bg-primary text-primary-foreground"><Globe2 className="size-5" /></span>
           <span><span className="block font-display text-3xl font-semibold">Contenido del sitio</span><span className="mt-2 block text-sm leading-6 text-muted-foreground">Edita secciones, textos, enlaces y fotografías.</span><span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-teal">Administrar <ArrowRight className="size-4 transition group-hover:translate-x-1" /></span></span>
+        </Link>
+        <Link href="/admin/eventos" className="pdh-panel group flex min-h-52 flex-col justify-between p-6 transition hover:-translate-y-1 hover:border-copper/50 hover:shadow-lg">
+          <span className="grid size-11 place-items-center rounded-full bg-secondary text-primary"><CalendarDays className="size-5" /></span>
+          <span><span className="block font-display text-3xl font-semibold">Eventos</span><span className="mt-2 block text-sm leading-6 text-muted-foreground">Publica actividades semanales y fechas especiales en el calendario.</span><span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-teal">Organizar agenda <ArrowRight className="size-4" /></span></span>
         </Link>
         <Link href="/admin/consultas" className="pdh-panel group flex min-h-52 flex-col justify-between p-6 transition hover:-translate-y-1 hover:border-copper/50 hover:shadow-lg">
           <span className="flex items-start justify-between"><span className="grid size-11 place-items-center rounded-full bg-secondary text-primary"><Inbox className="size-5" /></span>{newMessages > 0 && <span className="rounded-full bg-pink-100 px-3 py-1 text-xs font-bold text-pink-900 dark:bg-pink-950 dark:text-pink-200">{newMessages} nueva{newMessages === 1 ? "" : "s"}</span>}</span>
