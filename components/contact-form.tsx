@@ -1,100 +1,102 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
-import { LoaderCircle, Send } from "lucide-react";
-import {
-  submitContactAction,
-  type ContactFormState,
-} from "@/app/contact-actions";
+import { useRef, useState, type FormEvent } from "react";
+import { ArrowUpRight, Copy, LoaderCircle } from "lucide-react";
+import { instagramChatUrl } from "@/lib/contact";
 
-const initialState: ContactFormState = { status: "idle", message: "" };
-
-function FieldError({ messages }: { messages?: string[] }) {
-  if (!messages?.length) return null;
-  return <p className="mt-1 text-xs font-semibold text-red-700 dark:text-red-300">{messages[0]}</p>;
-}
+const instagram = instagramChatUrl(process.env.NEXT_PUBLIC_INSTAGRAM_URL);
 
 export function ContactForm() {
-  const [state, formAction, pending] = useActionState(submitContactAction, initialState);
-  const formRef = useRef<HTMLFormElement>(null);
+  const [preparedMessage, setPreparedMessage] = useState("");
+  const [status, setStatus] = useState("");
+  const [pending, setPending] = useState(false);
+  const attempt = useRef(0);
 
-  useEffect(() => {
-    if (state.status === "success") formRef.current?.reset();
-  }, [state.status]);
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    for (const field of Array.from(form.elements)) {
+      if (field instanceof HTMLInputElement || (field instanceof HTMLTextAreaElement && !field.readOnly)) {
+        field.value = field.value.trim();
+        field.setCustomValidity(field.value.length < field.minLength ? `Escribe al menos ${field.minLength} caracteres.` : "");
+      }
+    }
+    if (!form.reportValidity()) return;
+
+    const data = new FormData(form);
+    const message = `Hola, soy ${data.get("name")}.\nConsulta: ${data.get("subject")}\n\n${data.get("message")}`;
+    const currentAttempt = ++attempt.current;
+    setPreparedMessage(message);
+    setPending(true);
+    setStatus("Preparando tu mensaje…");
+
+    // Start copying and open the chat during the click gesture, before awaiting.
+    // The explicit link below also works when a browser blocks the new tab.
+    let copying: Promise<void>;
+    try {
+      copying = navigator.clipboard.writeText(message);
+    } catch {
+      copying = Promise.reject(new Error("Clipboard unavailable"));
+    }
+    window.open(instagram, "_blank", "noopener,noreferrer");
+
+    try {
+      await copying;
+      if (attempt.current === currentAttempt) {
+        setStatus("Mensaje copiado. Pégalo en el chat de Instagram y pulsa enviar. Si el chat no se abrió, usa el enlace de abajo.");
+      }
+    } catch {
+      if (attempt.current === currentAttempt) {
+        setStatus("No pudimos copiar automáticamente. Selecciona y copia el texto de abajo, abre Instagram y pégalo en el chat para enviarlo.");
+      }
+    } finally {
+      if (attempt.current === currentAttempt) setPending(false);
+    }
+  }
 
   return (
-    <form ref={formRef} action={formAction} className="pdh-panel grid gap-5 p-6 sm:p-8">
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label className="pdh-label" htmlFor="contact-name">Nombre</label>
-          <input
-            className="pdh-input mt-2"
-            id="contact-name"
-            name="name"
-            autoComplete="name"
-            maxLength={120}
-            required
-          />
-          <FieldError messages={state.errors?.name} />
-        </div>
-        <div>
-          <label className="pdh-label" htmlFor="contact-email">Correo</label>
-          <input
-            className="pdh-input mt-2"
-            id="contact-email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            maxLength={254}
-            required
-          />
-          <FieldError messages={state.errors?.email} />
-        </div>
+    <form
+      onSubmit={handleSubmit}
+      onChange={(event) => {
+        const field = event.target;
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) field.setCustomValidity("");
+        attempt.current++;
+        setPreparedMessage("");
+        setStatus("");
+        setPending(false);
+      }}
+      className="pdh-panel grid gap-5 p-6 sm:p-8"
+    >
+      <div>
+        <label className="pdh-label" htmlFor="contact-name">Nombre</label>
+        <input className="pdh-input mt-2" id="contact-name" name="name" autoComplete="name" minLength={2} maxLength={120} required />
       </div>
-
       <div>
         <label className="pdh-label" htmlFor="contact-subject">Asunto</label>
-        <input
-          className="pdh-input mt-2"
-          id="contact-subject"
-          name="subject"
-          maxLength={160}
-          placeholder="Ej. Consulta por un juego"
-          required
-        />
-        <FieldError messages={state.errors?.subject} />
+        <input className="pdh-input mt-2" id="contact-subject" name="subject" minLength={2} maxLength={160} placeholder="Ej. Consulta por un juego" required />
       </div>
-
       <div>
         <label className="pdh-label" htmlFor="contact-message">Mensaje</label>
-        <textarea
-          className="mt-2 min-h-36 w-full resize-y rounded-lg border border-input bg-background px-3 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
-          id="contact-message"
-          name="message"
-          maxLength={4000}
-          placeholder="Cuéntanos en qué podemos ayudarte..."
-          required
-        />
-        <FieldError messages={state.errors?.message} />
+        <textarea className="mt-2 min-h-36 w-full resize-y rounded-lg border border-input bg-background px-3 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20" id="contact-message" name="message" minLength={10} maxLength={4000} placeholder="Cuéntanos en qué podemos ayudarte..." required />
       </div>
-
-      <div className="absolute -left-[9999px]" aria-hidden="true">
-        <label htmlFor="contact-website">Sitio web</label>
-        <input id="contact-website" name="website" tabIndex={-1} autoComplete="off" />
-      </div>
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p
-          className={`text-sm ${state.status === "success" ? "font-semibold text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-300"}`}
-          aria-live="polite"
-        >
-          {state.message}
-        </p>
-        <button className="pdh-button-primary shrink-0" disabled={pending}>
-          {pending ? <LoaderCircle className="size-4 animate-spin" /> : <Send className="size-4" />}
-          {pending ? "Enviando..." : "Enviar consulta"}
-        </button>
-      </div>
+      <p className="text-sm leading-6 text-muted-foreground" id="contact-instructions">
+        Copiaremos tu consulta y abriremos Instagram. Pega el mensaje en el chat y pulsa enviar; te responderemos por allí.
+      </p>
+      <button type="submit" className="pdh-button-primary w-full whitespace-normal" disabled={pending} aria-describedby="contact-instructions">
+        {pending ? <LoaderCircle className="size-4 shrink-0 animate-spin" /> : <Copy className="size-4 shrink-0" />}
+        {pending ? "Copiando…" : "Copiar mensaje y abrir Instagram"}
+      </button>
+      <p className="text-sm leading-6" role="status">{status}</p>
+      {preparedMessage && (
+        <div className="grid gap-3">
+          <label className="pdh-label" htmlFor="contact-prepared">Tu mensaje para Instagram</label>
+          <textarea id="contact-prepared" className="pdh-input min-h-40 w-full" value={preparedMessage} readOnly onFocus={(event) => event.currentTarget.select()} />
+          <p className="text-xs text-muted-foreground">La consulta se enviará cuando pulses enviar en Instagram.</p>
+        </div>
+      )}
+      <a href={instagram} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm font-bold text-teal hover:underline">
+        Abrir chat de Instagram <ArrowUpRight className="size-4" />
+      </a>
     </form>
   );
 }

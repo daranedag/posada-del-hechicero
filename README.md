@@ -6,9 +6,9 @@ Prototipo comercial y funcional para la tienda de juegos de mesa y TCG de Valdiv
 
 - Vitrinas para juegos de mesa y Magic: The Gathering.
 - Eventos, ubicación y contacto directo por Instagram.
-- Portada administrable con redes sociales, dirección, horarios, búsqueda de juegos y formulario de contacto.
+- Portada administrable con redes sociales, dirección, horarios, búsqueda de juegos y formulario que copia la consulta y abre el chat de Instagram.
 - Gestión de textos, enlaces y fotografías desde `/admin/sitio`.
-- Bandeja privada de consultas en `/admin/consultas`.
+- Historial privado de consultas anteriores en `/admin/consultas`.
 - Panel privado para crear torneos con código y enlace compartible.
 - Inscripción sin cuenta para jugadores y enlace privado de edición.
 - Historial de versiones de cada decklist.
@@ -62,7 +62,7 @@ El modelo editorial usa exclusivamente tablas con prefijo `pdh_`:
 - `pdh_site_sections`: encabezado, título, descripción, orden y visibilidad de cada sección.
 - `pdh_site_items`: textos y enlaces repetibles, como redes, dirección y filas de horario.
 - `pdh_site_media`: fotografías por sección; conserva URL y clave de almacenamiento para poder eliminarlas correctamente.
-- `pdh_contact_submissions`: consultas privadas recibidas desde el formulario público.
+- `pdh_contact_submissions`: historial de consultas privadas anteriores; el formulario actual no guarda mensajes en la base de datos.
 
 Las imágenes existentes en InsForge siguen funcionando. Las nuevas imágenes se suben a ImageKit y se vinculan en `pdh_site_media`: `image_url` contiene la URL pública y `image_key` guarda `imagekit:<fileId>`. No se necesita una migración. Quitar o reemplazar una imagen de ImageKit en el sitio conserva el archivo en la biblioteca, porque puede estar usado en otras secciones. Los archivos subidos que todavía no se guardaron también quedan disponibles allí.
 

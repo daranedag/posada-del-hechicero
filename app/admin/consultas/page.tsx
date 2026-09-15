@@ -10,7 +10,7 @@ import {
   updateContactStatusAction,
 } from "@/app/admin/consultas/actions";
 
-export const metadata = { title: "Consultas recibidas" };
+export const metadata = { title: "Historial de consultas" };
 export const dynamic = "force-dynamic";
 
 const statusLabels: Record<ContactSubmission["status"], string> = {
@@ -33,8 +33,8 @@ export default async function ContactSubmissionsPage({ searchParams }: { searchP
     <section className="pdh-container py-10 sm:py-14">
       <AdminNav />
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-        <div><p className="pdh-kicker">Bandeja de entrada</p><h1 className="mt-4 text-5xl leading-none">Consultas recibidas</h1></div>
-        <p className="max-w-md text-sm leading-6 text-muted-foreground">Mensajes enviados desde el formulario público de la portada.</p>
+        <div><p className="pdh-kicker">Historial</p><h1 className="mt-4 text-5xl leading-none">Historial de consultas</h1></div>
+        <p className="max-w-md text-sm leading-6 text-muted-foreground">Consultas recibidas antes del cambio a Instagram. Los mensajes nuevos se atienden directamente en Instagram.</p>
       </div>
 
       {estado && <p className={`mt-6 rounded-lg border p-3 text-sm font-semibold ${estado === "error" ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200" : "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"}`}>{estado === "error" ? "No pudimos completar el cambio." : estado === "eliminado" ? "La consulta fue eliminada." : "El estado fue actualizado."}</p>}
@@ -69,8 +69,8 @@ export default async function ContactSubmissionsPage({ searchParams }: { searchP
         )) : (
           <div className="pdh-panel flex min-h-72 flex-col items-center justify-center p-8 text-center">
             <MessageSquareText className="size-10 text-copper" />
-            <h2 className="mt-5 text-3xl">Aún no hay consultas.</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Los mensajes nuevos aparecerán aquí.</p>
+            <h2 className="mt-5 text-3xl">No hay consultas anteriores.</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Las nuevas consultas se envían y responden en Instagram.</p>
             <span className="mt-5 inline-flex items-center gap-2 text-xs text-muted-foreground"><Archive className="size-3.5" /> Se muestran hasta 200 mensajes.</span>
           </div>
         )}

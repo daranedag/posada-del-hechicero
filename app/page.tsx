@@ -1,3 +1,4 @@
+import { contactSectionBody } from "@/lib/contact";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -254,7 +255,7 @@ function ContactSection({ section }: { section?: SiteSection }) {
         <div className="lg:sticky lg:top-32">
           <p className="pdh-kicker"><MessageCircle className="size-4" /> {section.kicker}</p>
           <h2 id="contact-title" className="mt-4 text-balance text-4xl leading-none sm:text-5xl">{section.title}</h2>
-          <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">{section.body}</p>
+          <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">{contactSectionBody(section.body)}</p>
         </div>
         <ContactForm />
       </div>

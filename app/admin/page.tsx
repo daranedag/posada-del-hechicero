@@ -47,7 +47,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div><p className="pdh-kicker">Panel privado</p><h1 className="mt-4 text-5xl leading-none">Administrar la Posada</h1></div>
-        <p className="max-w-md text-sm leading-6 text-muted-foreground">Actualiza la portada, responde consultas y conserva todas las herramientas de torneos.</p>
+        <p className="max-w-md text-sm leading-6 text-muted-foreground">Actualiza la portada, revisa el historial de consultas y administra los torneos.</p>
       </div>
 
       <div className="mt-9 grid gap-4 md:grid-cols-3">
@@ -57,7 +57,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         </Link>
         <Link href="/admin/consultas" className="pdh-panel group flex min-h-52 flex-col justify-between p-6 transition hover:-translate-y-1 hover:border-copper/50 hover:shadow-lg">
           <span className="flex items-start justify-between"><span className="grid size-11 place-items-center rounded-full bg-secondary text-primary"><Inbox className="size-5" /></span>{newMessages > 0 && <span className="rounded-full bg-pink-100 px-3 py-1 text-xs font-bold text-pink-900 dark:bg-pink-950 dark:text-pink-200">{newMessages} nueva{newMessages === 1 ? "" : "s"}</span>}</span>
-          <span><span className="block font-display text-3xl font-semibold">Consultas</span><span className="mt-2 block text-sm leading-6 text-muted-foreground">Lee y organiza los mensajes del formulario.</span><span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-teal">Ver bandeja <ArrowRight className="size-4 transition group-hover:translate-x-1" /></span></span>
+          <span><span className="block font-display text-3xl font-semibold">Historial de consultas</span><span className="mt-2 block text-sm leading-6 text-muted-foreground">Revisa las consultas anteriores. Las nuevas se atienden en Instagram.</span><span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-teal">Ver historial <ArrowRight className="size-4 transition group-hover:translate-x-1" /></span></span>
         </Link>
         <Link href="/admin/torneos/nuevo" className="pdh-panel group flex min-h-52 flex-col justify-between p-6 transition hover:-translate-y-1 hover:border-copper/50 hover:shadow-lg">
           <span className="grid size-11 place-items-center rounded-full bg-[#1b1025] text-[#f3a8d2]"><Plus className="size-5" /></span>

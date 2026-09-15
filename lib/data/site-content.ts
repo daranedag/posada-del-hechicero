@@ -1,3 +1,4 @@
+import { contactDescription } from "@/lib/contact";
 import { publicInsforge } from "@/lib/insforge/public";
 
 export const SITE_SECTION_KEYS = [
@@ -102,7 +103,7 @@ export const defaultHomeContent: HomeContent = {
       admin_label: "Formulario de contacto",
       kicker: "Hablemos",
       title: "¿Tienes alguna duda?",
-      body: "Déjanos tu consulta y te responderemos al correo que nos indiques.",
+      body: contactDescription,
       sort_order: 50,
       is_visible: true,
     },

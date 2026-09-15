@@ -1,3 +1,4 @@
+import { contactSectionBody } from "@/lib/contact";
 import { ImageKitPicker } from "@/components/imagekit-picker";
 import Image from "next/image";
 import { Eye, EyeOff, ImagePlus, Plus, Type } from "lucide-react";
@@ -37,7 +38,7 @@ const sectionHints: Record<SiteSection["key"], string> = {
   address: "Datos del local, enlace al mapa y una foto opcional.",
   hours: "Agrega una fila por día o por grupo de días.",
   game_request: "Llamado a contacto para consultar por disponibilidad de juegos.",
-  contact: "Presentación del formulario que guarda las consultas recibidas.",
+  contact: "Presentación del formulario que prepara consultas para enviarlas por Instagram.",
 };
 
 export default async function SiteAdminPage({ searchParams }: { searchParams: Promise<{ estado?: string }> }) {
@@ -100,7 +101,7 @@ export default async function SiteAdminPage({ searchParams }: { searchParams: Pr
                     </label>
                   </div>
                   <label className="pdh-label">Descripción
-                    <textarea className={textareaClass} name="body" defaultValue={section.body} maxLength={3000} />
+                    <textarea className={textareaClass} name="body" defaultValue={section.key === "contact" ? contactSectionBody(section.body) : section.body} maxLength={3000} />
                   </label>
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex flex-wrap items-center gap-5">
