@@ -4,6 +4,9 @@ const imageKitEndpoint = process.env.IMAGEKIT_URL_ENDPOINT?.trim();
 const imageKitUrl = imageKitEndpoint ? new URL(imageKitEndpoint) : null;
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [{ source: "/eventos", destination: "/#calendario", permanent: true }];
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "6mb",

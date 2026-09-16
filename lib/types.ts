@@ -1,19 +1,4 @@
-export type ProductCategory = "board-game" | "tcg" | "accessory";
 export type GameSystem = "magic" | "pokemon" | "mitos-y-leyendas";
-
-export interface Product {
-  id: string;
-  slug: string;
-  category: ProductCategory;
-  game_system: GameSystem | null;
-  name: string;
-  eyebrow: string | null;
-  description: string;
-  price_clp: number | null;
-  availability: "disponible" | "preventa" | "agotado" | "consultar";
-  image_url: string | null;
-  is_featured: boolean;
-}
 
 export interface StoreEvent {
   id: string;

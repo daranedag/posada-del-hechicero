@@ -73,7 +73,7 @@ export async function saveEventAction(_previous: EventFormState, form: FormData)
   } catch (error) {
     return { message: error instanceof Error ? error.message : "No se pudo guardar el evento." };
   }
-  revalidatePath("/eventos");
+  revalidatePath("/");
   revalidatePath("/admin/eventos");
   if (targetId) revalidatePath(`/admin/eventos/${targetId}`);
   redirect(`/admin/eventos?mes=${input.date.slice(0, 7)}&estado=guardado`);

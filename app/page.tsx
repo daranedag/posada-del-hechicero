@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   AtSign,
+  CalendarDays,
   Clock3,
   ExternalLink,
   Globe2,
@@ -13,6 +14,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
+import { EventCalendar } from "@/components/events/event-calendar";
+import { chileDate, validMonth, type EventOccurrence } from "@/lib/events/calendar";
+import { getCalendarMonth } from "@/lib/events/data";
 import {
   defaultHomeContent,
   getHomeContent,
@@ -22,7 +26,7 @@ import {
   type SiteSectionKey,
 } from "@/lib/data/site-content";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 function externalProps(href: string | null) {
   return href ? { href, target: "_blank" as const, rel: "noreferrer" } : { href: "#contacto" };
@@ -36,7 +40,16 @@ function iconForSocial(item: SiteItem) {
   return Globe2;
 }
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ mes?: string | string[] }> }) {
+  const { mes } = await searchParams;
+  // One request-time snapshot keeps the current day consistent during hydration.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  const month = typeof mes === "string" && validMonth(mes) ? mes : chileDate(now).slice(0, 7);
+  let events: EventOccurrence[] = [];
+  let calendarError = "";
+  try { events = await getCalendarMonth(month); }
+  catch { calendarError = "No pudimos cargar las actividades. Inténtalo nuevamente en un momento."; }
   const content = await getHomeContent();
   const sections = new Map(content.sections.map((section) => [section.key, section]));
   const fallbackHero = defaultHomeContent.sections.find((section) => section.key === "hero")!;
@@ -113,6 +126,15 @@ export default async function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section id="calendario" className="pdh-section pdh-container scroll-mt-28" aria-labelledby="calendar-title">
+        <div className="mb-8 max-w-3xl">
+          <p className="pdh-kicker"><CalendarDays className="size-4" /> Agenda de la Posada</p>
+          <h2 id="calendar-title" className="mt-4 text-balance text-4xl leading-none sm:text-5xl">Calendario de actividades</h2>
+          <p className="mt-5 text-base leading-7 text-muted-foreground">Encuentra nuestros encuentros semanales y fechas especiales. Selecciona un día y descubre qué se viene en la Posada.</p>
+        </div>
+        {calendarError ? <div className="pdh-panel p-8" role="alert"><p>{calendarError}</p><Link className="pdh-button-primary mt-4" href={`/?mes=${month}#calendario`}>Volver a intentar</Link></div> : <EventCalendar key={month} month={month} events={events} initialNow={now} />}
       </section>
 
       <SocialSection section={section("social")} items={items("social")} media={media("social")} />

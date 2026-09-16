@@ -17,7 +17,7 @@ export function EventCalendar({ month, events, initialNow, admin = false }: { mo
     document.addEventListener("visibilitychange", update);
     return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", update); };
   }, []);
-  const basePath = admin ? "/admin/eventos" : "/eventos";
+  const monthHref = (value: string) => admin ? `/admin/eventos?mes=${value}` : `/?mes=${value}#calendario`;
   const { first, last } = monthRange(month);
   const leading = (new Date(`${first}T12:00:00Z`).getUTCDay() + 6) % 7;
   const days: string[] = [];
@@ -25,15 +25,16 @@ export function EventCalendar({ month, events, initialNow, admin = false }: { mo
   const onDay = (date: string) => events.filter(event => event.occurrence_date === date || (event.occurrence_date < date && chileDate(event.ends_at ?? event.starts_at) >= date && event.ends_at && eventTime(event.ends_at) !== "00:00"));
   const selectedEvents = onDay(selected);
   const upcoming = events.filter(event => event.occurrence_date >= today && !event.cancelled && event.status !== "draft" && occurrenceStatus(event, now) !== "Finalizado").slice(0, 6);
+  const showUpcomingBesideDay = upcoming.length > 0 && !selectedEvents.some(event => event.image_url);
   const monthLabel = new Intl.DateTimeFormat("es-CL", { timeZone: "UTC", month: "long", year: "numeric" }).format(new Date(`${first}T12:00:00Z`));
   return <div className="grid gap-8">
     <div className="pdh-panel overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-foreground/10 p-4 sm:p-6">
         <div><p className="pdh-kicker">{admin ? "Organiza la agenda" : "Encuentra tu próxima partida"}</p><h2 className="mt-2 text-3xl first-letter:uppercase sm:text-4xl">{monthLabel}</h2></div>
         <div className="flex items-center gap-2">
-          {validMonth(shiftMonth(month, -1)) && <Link href={`${basePath}?mes=${shiftMonth(month, -1)}`} scroll={false} className="pdh-button-secondary size-10 p-0" aria-label="Mes anterior"><ChevronLeft className="size-5" /></Link>}
-          <Link href={`${basePath}?mes=${today.slice(0, 7)}`} scroll={false} onClick={() => setSelected(today)} className="pdh-button-secondary h-10 px-4">Hoy</Link>
-          {validMonth(shiftMonth(month, 1)) && <Link href={`${basePath}?mes=${shiftMonth(month, 1)}`} scroll={false} className="pdh-button-secondary size-10 p-0" aria-label="Mes siguiente"><ChevronRight className="size-5" /></Link>}
+          {validMonth(shiftMonth(month, -1)) && <Link href={monthHref(shiftMonth(month, -1))} scroll={false} className="pdh-button-secondary size-10 p-0" aria-label="Mes anterior"><ChevronLeft className="size-5" /></Link>}
+          <Link href={monthHref(today.slice(0, 7))} scroll={false} onClick={() => setSelected(today)} className="pdh-button-secondary h-10 px-4">Hoy</Link>
+          {validMonth(shiftMonth(month, 1)) && <Link href={monthHref(shiftMonth(month, 1))} scroll={false} className="pdh-button-secondary size-10 p-0" aria-label="Mes siguiente"><ChevronRight className="size-5" /></Link>}
         </div>
       </div>
       <div className="grid grid-cols-7 bg-secondary/40 text-center text-xs font-bold uppercase tracking-wide">
@@ -55,7 +56,8 @@ export function EventCalendar({ month, events, initialNow, admin = false }: { mo
       </div>
       <div className="flex flex-wrap gap-4 p-4 text-xs text-muted-foreground"><span className="inline-flex items-center gap-2"><span className="size-2 rounded-full bg-teal" /> Habituales</span><span className="inline-flex items-center gap-2"><span className="size-2 rounded-full bg-copper" /> Especiales</span><span>Horarios de Chile · Selecciona un día para ver sus actividades</span></div>
     </div>
-    <section aria-labelledby="selected-day-title" className="grid gap-5">
+    <div className={`grid items-start gap-8 ${showUpcomingBesideDay ? "lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]" : ""}`}>
+    <section aria-labelledby="selected-day-title" className="grid min-w-0 gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="pdh-kicker">{selected === today ? "Hoy en la Posada" : "Actividades del día"}</p><h2 id="selected-day-title" className="mt-2 text-3xl first-letter:uppercase">{dayLabel(selected)}</h2></div>{admin && <Link href={`/admin/eventos/nuevo?fecha=${selected}`} className="pdh-button-primary"><Plus className="size-4" /> Agregar evento</Link>}</div>
       {!selectedEvents.length && <div className="pdh-panel p-8 text-center"><CalendarDays className="mx-auto size-8 text-copper" /><h3 className="mt-4 text-2xl">No hay actividades programadas para este día.</h3><p className="mt-2 text-sm text-muted-foreground">Selecciona otra fecha para explorar el calendario.</p></div>}
       {selectedEvents.map(event => <article key={event.occurrence_id} className="pdh-panel grid overflow-hidden md:grid-cols-[1fr_auto]">
@@ -70,6 +72,7 @@ export function EventCalendar({ month, events, initialNow, admin = false }: { mo
         {event.image_url && <div className="relative order-first min-h-52 md:order-last md:w-72"><Image src={event.image_url} alt={event.title} fill sizes="(max-width: 768px) 100vw, 288px" className="object-cover" /></div>}
       </article>)}
     </section>
-    {upcoming.length > 0 && <section><h2 className="text-3xl">Próximamente este mes</h2><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{upcoming.map(event => <button key={event.occurrence_id} type="button" className="pdh-panel p-4 text-left transition hover:border-copper" onClick={() => { setSelected(event.occurrence_date); document.getElementById("selected-day-title")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}><span className="text-xs font-bold text-teal">{event.occurrence_date.slice(8)}/{event.occurrence_date.slice(5, 7)} · {eventTime(event.starts_at)}</span><span className="mt-1 block font-display text-2xl">{event.title}</span></button>)}</div></section>}
+    {upcoming.length > 0 && <section className="min-w-0"><h2 className="text-3xl">Próximamente este mes</h2><div className={`mt-4 grid gap-3 sm:grid-cols-2 ${showUpcomingBesideDay ? "lg:grid-cols-1" : "lg:grid-cols-3"}`}>{upcoming.map(event => <button key={event.occurrence_id} type="button" className="pdh-panel min-w-0 p-4 text-left transition hover:border-copper" onClick={() => { setSelected(event.occurrence_date); document.getElementById("selected-day-title")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}><span className="text-xs font-bold text-teal">{event.occurrence_date.slice(8)}/{event.occurrence_date.slice(5, 7)} · {eventTime(event.starts_at)}</span><span className="mt-1 block break-words font-display text-2xl">{event.title}</span></button>)}</div></section>}
+    </div>
   </div>;
 }

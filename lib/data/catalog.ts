@@ -1,28 +1,5 @@
 import { publicInsforge } from "@/lib/insforge/public";
-import type { GameSystem, Product, Tournament } from "@/lib/types";
-
-export async function getProducts(filters: {
-  category?: "board-game" | "tcg" | "accessory";
-  gameSystem?: GameSystem;
-  limit?: number;
-} = {}): Promise<Product[]> {
-  let query = publicInsforge.database
-    .from("pdh_products")
-    .select("id,slug,category,game_system,name,eyebrow,description,price_clp,availability,image_url,is_featured")
-    .eq("status", "published")
-    .order("sort_order", { ascending: true })
-    .limit(filters.limit ?? 24);
-
-  if (filters.category) query = query.eq("category", filters.category);
-  if (filters.gameSystem) query = query.eq("game_system", filters.gameSystem);
-
-  const { data, error } = await query;
-  if (error) {
-    console.error("No se pudo cargar el catalogo", error);
-    return [];
-  }
-  return (data ?? []) as Product[];
-}
+import type { Tournament } from "@/lib/types";
 
 export async function getPublicTournaments(): Promise<Tournament[]> {
   const { data, error } = await publicInsforge.database

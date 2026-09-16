@@ -38,7 +38,7 @@ try {
   async function screenshot(name) { const { data } = await call("Page.captureScreenshot", { format: "png" }); await writeFile(`/tmp/${name}.png`, Buffer.from(data, "base64")); }
   await call("Page.enable"); await call("Runtime.enable");
   await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
-  await navigate("/eventos?mes=2026-09", "document.body.innerText.includes('septiembre de 2026')");
+  await navigate("/?mes=2026-09#calendario", "document.body.innerText.includes('septiembre de 2026')");
   assert.equal(await evaluate("document.body.innerText.includes('No pudimos cargar')"), false, "Live backend calendar query failed");
   await screenshot("pdh-calendar-live");
   await navigate("/calendar-verification", "document.body.innerText.includes('Noche de juegos de mesa')");

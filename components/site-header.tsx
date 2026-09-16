@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { AtSign, Menu, MapPin } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 
 const navItems = [
+  { href: "/#calendario", label: "Calendario" },
   { href: "/#redes", label: "Redes" },
   { href: "/#direccion", label: "Dirección" },
   { href: "/#horarios", label: "Horarios" },
@@ -22,6 +24,7 @@ const navItems = [
 ];
 
 export function SiteHeader() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const instagram =
     process.env.NEXT_PUBLIC_INSTAGRAM_URL ??
     "https://www.instagram.com/posada.delhechicero/";
@@ -38,12 +41,12 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Navegacion principal">
+        <nav className="hidden items-center gap-4 xl:gap-6 lg:flex" aria-label="Navegacion principal">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-bold text-foreground/70 transition hover:text-primary"
+              className="whitespace-nowrap text-sm font-bold text-foreground/70 transition hover:text-primary"
             >
               {item.label}
             </Link>
@@ -66,7 +69,7 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2 lg:hidden">
           <ThemeToggle />
-          <Sheet>
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger
               aria-label="Abrir menu"
               className="grid size-10 place-items-center rounded-full border border-foreground/15 bg-card"
@@ -83,6 +86,7 @@ export function SiteHeader() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => setMenuOpen(false)}
                     className="rounded-lg px-4 py-3 text-base font-bold transition hover:bg-secondary"
                   >
                     {item.label}
