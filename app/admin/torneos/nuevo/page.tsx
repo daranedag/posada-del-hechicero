@@ -1,6 +1,7 @@
 import { AdminNav } from "@/components/admin-nav";
 import { createTournamentAction } from "@/app/admin/actions";
 import { requireAdmin } from "@/lib/auth/admin";
+import { TournamentDateTimeFields } from "@/components/tournament-date-time-fields";
 
 export const metadata = { title: "Crear torneo" };
 
@@ -21,8 +22,8 @@ export default async function NewTournamentPage({ searchParams }: { searchParams
             <label className="grid gap-2"><span className="pdh-label">Cupo máximo <span className="font-normal text-muted-foreground">(opcional)</span></span><input name="maxPlayers" type="number" min="2" max="1000" className="pdh-input" placeholder="40" /></label>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
-            <label className="grid gap-2"><span className="pdh-label">Inicio del torneo</span><input name="startsAt" type="datetime-local" required className="pdh-input" /></label>
-            <label className="grid gap-2"><span className="pdh-label">Cierre de listas</span><input name="deadline" type="datetime-local" required className="pdh-input" /><span className="text-xs leading-5 text-muted-foreground">Puede ser anterior o posterior al inicio del torneo.</span></label>
+            <TournamentDateTimeFields name="startsAt" label="Inicio del torneo" />
+            <div className="grid gap-2"><TournamentDateTimeFields name="deadline" label="Cierre de listas" /><p className="text-xs leading-5 text-muted-foreground">Puede ser anterior o posterior al inicio del torneo.</p></div>
           </div>
           <label className="grid gap-2"><span className="pdh-label">Lugar</span><input name="location" required defaultValue="La Posada del Hechicero, Aníbal Pinto 1843 Local 3, Valdivia" className="pdh-input" /></label>
           <label className="grid gap-2"><span className="pdh-label">Indicaciones públicas <span className="font-normal text-muted-foreground">(opcional)</span></span><textarea name="notes" maxLength={3000} className="min-h-28 w-full rounded-xl border border-input bg-background p-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20" placeholder="Hora de llegada, requisitos, contacto..." /></label>

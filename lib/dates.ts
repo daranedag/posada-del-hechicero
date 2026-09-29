@@ -28,6 +28,17 @@ export function formatChileDateTimeInput(value: string) {
   return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
 }
 
+export function parseDayFirstDateTime(date: unknown, time: unknown): string | null {
+  if (typeof date !== "string" || typeof time !== "string") return null;
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(date.trim());
+  if (!match || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return null;
+  const [, day, month, year] = match;
+  const isoDate = `${year}-${month}-${day}`;
+  const instant = new Date(`${isoDate}T00:00:00Z`);
+  if (!Number.isFinite(instant.getTime()) || instant.toISOString().slice(0, 10) !== isoDate) return null;
+  return `${isoDate}T${time}`;
+}
+
 export function formatChileDay(value: string) {
   return new Intl.DateTimeFormat("es-CL", { timeZone: "America/Santiago", day: "2-digit" }).format(new Date(value));
 }

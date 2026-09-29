@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { CalendarClock, Clipboard, Download, ExternalLink, Save, Users } from "lucide-react";
 import { notFound } from "next/navigation";
-import { deleteTournamentAction, deleteTournamentPlayerAction, saveStandingsAction, updateTournamentDeadlineAction, updateTournamentStatusAction } from "@/app/admin/actions";
+import { deleteTournamentAction, deleteTournamentPlayerAction, saveStandingsAction, updateTournamentDeadlineAction, updateTournamentStartAction, updateTournamentStatusAction } from "@/app/admin/actions";
 import { AdminDeleteButton } from "@/components/admin-delete-button";
 import { AdminNav } from "@/components/admin-nav";
 import { requireAdmin } from "@/lib/auth/admin";
-import { formatChileDate, formatChileDateTimeInput } from "@/lib/dates";
+import { formatChileDate } from "@/lib/dates";
+import { TournamentDateTimeFields } from "@/components/tournament-date-time-fields";
 import { adminInsforge } from "@/lib/insforge/admin";
 import type { Tournament } from "@/lib/types";
 
@@ -38,14 +39,16 @@ export default async function TournamentAdminPage({
   const standings = new Map(((standingsResult.data ?? []) as Standing[]).map((item) => [item.player_id, item]));
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const shareUrl = new URL(`/torneos/${tournament.code}`, appUrl).toString();
-  const operationSucceeded = estado === "actualizado" || estado === "jugador-eliminado" || estado === "cierre-actualizado";
+  const operationSucceeded = estado === "actualizado" || estado === "jugador-eliminado" || estado === "cierre-actualizado" || estado === "inicio-actualizado";
   const operationMessages: Record<string, string> = {
     actualizado: "El estado del torneo fue actualizado.",
     "cierre-actualizado": "El cierre de listas fue actualizado.",
+    "inicio-actualizado": "La fecha y hora de inicio del torneo fueron actualizadas.",
     "jugador-eliminado": "El participante y sus datos asociados fueron eliminados.",
     "error-eliminar": "No pudimos eliminar el torneo. Inténtalo nuevamente.",
     "error-jugador": "No pudimos eliminar al participante. Inténtalo nuevamente.",
     "error-cierre": "No pudimos actualizar el cierre de listas. Revisa la fecha e inténtalo nuevamente.",
+    "error-inicio": "No pudimos actualizar el inicio del torneo. Revisa la fecha y hora e inténtalo nuevamente.",
   };
   const standingsFormId = `standings-${id}`;
   return (
@@ -63,16 +66,26 @@ export default async function TournamentAdminPage({
 
       <div className="pdh-panel mt-6 flex flex-col justify-between gap-5 p-5 sm:flex-row sm:items-end sm:p-6">
         <div>
+          <p className="pdh-kicker"><CalendarClock className="size-4" /> Inicio del torneo</p>
+          <h2 className="mt-3 text-3xl">Actualizar inicio</h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">El inicio actual es {formatChileDate(tournament.starts_at)}. Puedes cambiar la fecha y hora de inicio del torneo.</p>
+        </div>
+        <form action={updateTournamentStartAction} className="grid gap-3 sm:w-80 sm:shrink-0">
+          <input type="hidden" name="id" value={id} />
+          <TournamentDateTimeFields name="startsAt" label="Nuevo inicio" defaultValue={tournament.starts_at} />
+          <button className="pdh-button-primary"><Save className="size-4" /> Guardar nuevo inicio</button>
+        </form>
+      </div>
+
+      <div className="pdh-panel mt-6 flex flex-col justify-between gap-5 p-5 sm:flex-row sm:items-end sm:p-6">
+        <div>
           <p className="pdh-kicker"><CalendarClock className="size-4" /> Cierre de listas</p>
           <h2 className="mt-3 text-3xl">Actualizar plazo</h2>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">El cierre actual es {formatChileDate(tournament.submission_deadline)}. Puedes fijar el nuevo plazo antes o después del inicio del torneo.</p>
         </div>
-        <form action={updateTournamentDeadlineAction} className="grid shrink-0 gap-3 sm:min-w-80">
+        <form action={updateTournamentDeadlineAction} className="grid gap-3 sm:w-80 sm:shrink-0">
           <input type="hidden" name="id" value={id} />
-          <label className="grid gap-2">
-            <span className="pdh-label">Nuevo cierre</span>
-            <input name="deadline" type="datetime-local" required defaultValue={formatChileDateTimeInput(tournament.submission_deadline)} className="pdh-input" />
-          </label>
+          <TournamentDateTimeFields name="deadline" label="Nuevo cierre" defaultValue={tournament.submission_deadline} />
           <button className="pdh-button-primary"><Save className="size-4" /> Guardar nuevo cierre</button>
         </form>
       </div>
