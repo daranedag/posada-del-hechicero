@@ -3,6 +3,26 @@ import test from "node:test";
 import { chileInstant, chileLocal, expandEvents, occurrenceOn, occurrenceStatus, monthRange, isDate, type CalendarEvent, type EventException } from "../lib/events/calendar.ts";
 import { eventInputSchema } from "../lib/events/validation.ts";
 
+const registrationInput = {
+  title: "Torneo Modern", description: "", event_type: "magic", format_label: "Modern", location: "La Posada",
+  date: "2026-10-09", end_date: "2026-10-09", start_time: "18:00", end_time: "20:00",
+  repetition: "once", days: [], until: "", status: "published", deck_registration: "on",
+  deck_format: "modern", deck_deadline_date: "2026-10-09", deck_deadline_time: "18:00",
+};
+test("deck registration accepts supported Magic formats and deadlines after start", () => {
+  assert.equal(eventInputSchema.safeParse(registrationInput).success, true);
+  assert.equal(eventInputSchema.safeParse({ ...registrationInput, deck_deadline_time: "19:00" }).success, true);
+});
+test("deck registration rejects weekly events, other games and unsupported formats", () => {
+  for (const change of [{ repetition: "weekly", days: [5] }, { event_type: "pokemon" }, { deck_format: "commander" }]) {
+    assert.equal(eventInputSchema.safeParse({ ...registrationInput, ...change }).success, false);
+  }
+});
+test("deck registration rejects missing deadlines and missing Chile DST hours", () => {
+  assert.equal(eventInputSchema.safeParse({ ...registrationInput, deck_deadline_date: "" }).success, false);
+  assert.equal(eventInputSchema.safeParse({ ...registrationInput, deck_deadline_date: "2026-09-06", deck_deadline_time: "00:30" }).success, false);
+});
+
 const weekly: CalendarEvent = {
   id: "event-1", slug: "commander", title: "Commander", description: "Viernes de juego", event_type: "magic", format_label: "Commander",
   starts_at: "2026-09-04T22:00:00.000Z", ends_at: "2026-09-05T02:00:00.000Z", location: "La Posada", image_url: null, image_key: null,

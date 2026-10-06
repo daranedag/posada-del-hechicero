@@ -15,7 +15,17 @@ export const eventInputSchema = z.object({
   days: z.array(z.coerce.number().int().min(0).max(6)).max(7),
   until: z.string().refine(value => value === "" || isDate(value), "Fecha de término inválida."),
   status: z.enum(["draft", "published", "cancelled"]),
+  deck_registration: z.enum(["on", "off"]).default("off"),
+  deck_format: z.string().default(""),
+  deck_deadline_date: z.string().default(""),
+  deck_deadline_time: z.string().default(""),
 }).superRefine((input, ctx) => {
+  if (input.deck_registration === "on") {
+    if (input.event_type !== "magic") ctx.addIssue({ code: "custom", path: ["deck_registration"], message: "La inscripción de decks está disponible para Magic." });
+    if (input.repetition !== "once") ctx.addIssue({ code: "custom", path: ["deck_registration"], message: "La inscripción de decks requiere un evento de una sola fecha." });
+    if (!["standard", "pioneer", "modern", "pauper"].includes(input.deck_format)) ctx.addIssue({ code: "custom", path: ["deck_format"], message: "Elige un formato para validar los decks." });
+    if (!chileInstant(`${input.deck_deadline_date}T${input.deck_deadline_time}`)) ctx.addIssue({ code: "custom", path: ["deck_deadline_time"], message: "Elige una fecha y hora de cierre válidas en Chile." });
+  }
   const start = chileInstant(`${input.date}T${input.start_time}`);
   const end = chileInstant(`${input.end_date}T${input.end_time}`);
   if (!start) ctx.addIssue({ code: "custom", path: ["start_time"], message: "Esta hora no existe en Chile por el cambio de horario. Elige otra." });

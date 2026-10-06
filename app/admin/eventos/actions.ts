@@ -13,7 +13,7 @@ import { eventInputSchema } from "@/lib/events/validation";
 export interface EventFormState { message: string; errors?: Record<string, string[] | undefined> }
 
 export async function saveEventAction(_previous: EventFormState, form: FormData): Promise<EventFormState> {
-  await requireAdmin();
+  const user = await requireAdmin();
   const result = eventInputSchema.safeParse({
     ...Object.fromEntries(form.entries()), days: form.getAll("days"),
   });
@@ -33,6 +33,8 @@ export async function saveEventAction(_previous: EventFormState, form: FormData)
   try {
     const previous = eventId ? await getAdminEvent(eventId) : null;
     if (eventId && !previous) return { message: "El evento ya no existe." };
+    if (input.deck_registration === "on" && mode.data !== "create") return { message: "La inscripción se activa al crear un evento nuevo." };
+    if (previous?.tournament_id && (input.repetition !== "once" || input.event_type !== "magic")) return { message: "Un evento con inscripción de decks debe conservar la categoría Magic y una sola fecha." };
     if (previous && datedEdit && !occursOn(previous, occurrenceDate)) return { message: "La fecha ya no pertenece a esta programación. Recarga el calendario." };
     const exception = previous && mode.data === "occurrence" ? await getEventException(previous.id, occurrenceDate) : null;
     // Existing image metadata comes from trusted rows, never hidden client URLs.
@@ -49,7 +51,12 @@ export async function saveEventAction(_previous: EventFormState, form: FormData)
       const asset = await getImageKitAsset(fileId);
       image = { image_url: asset.url, image_key: `imagekit:${asset.fileId}` };
     }
-    const { data, error } = await adminInsforge.database.rpc("pdh_save_calendar_event", {
+    const { data, error } = await adminInsforge.database.rpc("pdh_save_calendar_event_with_registration", {
+      p_owner_id: user.id,
+      p_registration: input.deck_registration === "on" ? {
+        format_code: input.deck_format,
+        submission_deadline: chileInstant(`${input.deck_deadline_date}T${input.deck_deadline_time}`),
+      } : null,
       p_id: eventId,
       p_mode: mode.data,
       p_date: datedEdit ? occurrenceDate : null,
@@ -75,6 +82,9 @@ export async function saveEventAction(_previous: EventFormState, form: FormData)
   }
   revalidatePath("/");
   revalidatePath("/admin/eventos");
+  revalidatePath("/admin");
+  revalidatePath("/torneos", "layout");
+  revalidatePath("/admin/torneos", "layout");
   if (targetId) revalidatePath(`/admin/eventos/${targetId}`);
   redirect(`/admin/eventos?mes=${input.date.slice(0, 7)}&estado=guardado`);
 }

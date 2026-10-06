@@ -11,6 +11,8 @@ export interface CalendarEvent {
   status: "draft" | "published" | "cancelled" | "completed";
   recurrence_days: number[] | null; recurrence_until: string | null;
   updated_at: string;
+  tournament_id?: string | null;
+  registration_url?: string | null;
 }
 export interface EventException {
   event_id: string; occurrence_date: string; title: string; description: string;

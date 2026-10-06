@@ -3,7 +3,7 @@ import { publicInsforge } from "@/lib/insforge/public";
 import { adminInsforge } from "@/lib/insforge/admin";
 import { addDays, expandEvents, monthRange, type CalendarEvent, type EventException } from "./calendar";
 
-export const eventColumns = "id,slug,title,description,event_type,format_label,starts_at,ends_at,location,image_url,image_key,status,recurrence_days,recurrence_until,updated_at";
+export const eventColumns = "id,slug,title,description,event_type,format_label,starts_at,ends_at,location,image_url,image_key,status,recurrence_days,recurrence_until,updated_at,tournament_id,registration_url";
 const exceptionColumns = "event_id,occurrence_date,title,description,event_type,format_label,starts_at,ends_at,location,image_url,image_key,cancelled";
 
 export async function getCalendarMonth(month: string, admin = false) {
