@@ -2,7 +2,7 @@ import JSZip from "jszip";
 
 export interface ExportTournament { name: string; format_code: string; starts_at: string; location: string }
 export interface ExportPlayer { id: string; first_name: string; last_name: string; email: string | null }
-export interface ExportSubmission { id: string; player_id: string; version_number: number }
+export interface ExportSubmission { id: string; player_id: string; version_number: number; archetype: string | null }
 export interface ExportStanding { player_id: string; rank: number; match_points: number; wins: number; losses: number; draws: number }
 export interface ExportCard { submission_id: string; board: "main" | "sideboard"; quantity: number; card_name: string }
 
@@ -23,6 +23,7 @@ export async function buildMtgtop8Zip(input: {
 }) {
   const playerById = new Map(input.players.map((player) => [player.id, player]));
   const standingByPlayer = new Map(input.standings.map((standing) => [standing.player_id, standing]));
+  const submissionByPlayer = new Map(input.submissions.map((submission) => [submission.player_id, submission]));
   const zip = new JSZip();
   const date = input.tournament.starts_at.slice(0, 10);
 
@@ -37,10 +38,10 @@ export async function buildMtgtop8Zip(input: {
   ].join("\n"));
 
   zip.file("standings.csv", [
-    ["Rank", "Player", "Email", "Match Points", "Wins", "Losses", "Draws"].map(csvCell).join(","),
+    ["Rank", "Player", "Email", "Match Points", "Wins", "Losses", "Draws", "Archetype"].map(csvCell).join(","),
     ...input.standings.map((standing) => {
       const player = playerById.get(standing.player_id);
-      return [standing.rank, player ? `${player.first_name} ${player.last_name}` : "", player?.email ?? "", standing.match_points, standing.wins, standing.losses, standing.draws].map(csvCell).join(",");
+      return [standing.rank, player ? `${player.first_name} ${player.last_name}` : "", player?.email ?? "", standing.match_points, standing.wins, standing.losses, standing.draws, submissionByPlayer.get(standing.player_id)?.archetype ?? ""].map(csvCell).join(",");
     }),
   ].join("\n"));
 
@@ -55,6 +56,7 @@ export async function buildMtgtop8Zip(input: {
     zip.file(`decks/${rank}-${safeExportName(`${player.first_name}-${player.last_name}`)}.txt`, [
       `// Player: ${player.first_name} ${player.last_name}`,
       `// Rank: ${standing?.rank ?? ""}`,
+      `// Archetype: ${submission.archetype ?? ""}`,
       `// Deck version: ${submission.version_number}`,
       "",
       ...main,
@@ -63,6 +65,6 @@ export async function buildMtgtop8Zip(input: {
     ].join("\n"));
   }
 
-  zip.file("LEEME.txt", "Los nombres de cartas se exportan en inglés desde Scryfall. En MTGTop8, crea el evento con evento-mtgtop8.txt y pega cada archivo de la carpeta decks en su formulario de decklist. Las líneas de sideboard usan el prefijo SB: aceptado por la plataforma.");
+  zip.file("LEEME.txt", "Los nombres de cartas se exportan en inglés desde Scryfall. En MTGTop8, crea el evento con evento-mtgtop8.txt y pega cada archivo de la carpeta decks en su formulario de decklist. Copia el arquetipo indicado en Archetype al campo correspondiente del formulario; también está disponible en standings.csv. Si está vacío, corresponde a una lista anterior al registro de arquetipos. Las líneas de sideboard usan el prefijo SB: aceptado por la plataforma.");
   return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
 }

@@ -17,7 +17,7 @@ export function DeckSubmissionForm({
   defaults,
 }: {
   code: string;
-  defaults?: { firstName: string; lastName: string; email: string; source: string; deckList: string; editToken: string };
+  defaults?: { firstName: string; lastName: string; email: string; archetype: string; source: string; deckList: string; editToken: string };
 }) {
   const submissionLocked = useRef(false);
   const deckListRef = useRef<HTMLTextAreaElement>(null);
@@ -45,6 +45,7 @@ export function DeckSubmissionForm({
           firstName: formData.get("firstName"),
           lastName: formData.get("lastName"),
           email: formData.get("email"),
+          archetype: formData.get("archetype"),
           source: formData.get("source"),
           deckList: formData.get("deckList"),
           editToken: defaults?.editToken,
@@ -111,6 +112,10 @@ export function DeckSubmissionForm({
         <label className="grid gap-2"><span className="pdh-label">Email <span className="font-normal text-muted-foreground">(opcional)</span></span><input name="email" type="email" defaultValue={defaults?.email} className="pdh-input" autoComplete="email" /></label>
         <label className="grid gap-2"><span className="pdh-label">Origen de la lista</span><select name="source" defaultValue={defaults?.source ?? "moxfield"} className="pdh-input"><option value="moxfield">Moxfield</option><option value="manabox">ManaBox</option><option value="arena">MTG Arena</option><option value="mtgo">MTGO / MTGTop8</option><option value="plain-text">Texto simple</option><option value="other">Otro</option></select></label>
       </div>
+      <label className="mt-5 grid gap-2">
+        <span className="pdh-label">Arquetipo del Deck</span>
+        <input name="archetype" required maxLength={120} defaultValue={defaults?.archetype} className="pdh-input" placeholder="Ej.: Rakdos Midrange, Mono Red Aggro, Azorius Control" />
+      </label>
       <label className="mt-5 grid gap-2">
         <span className="pdh-label">Decklist</span>
         <textarea

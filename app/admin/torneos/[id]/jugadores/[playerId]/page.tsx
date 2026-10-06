@@ -12,6 +12,7 @@ type Submission = {
   id: string;
   version_number: number;
   source: string;
+  archetype: string | null;
   raw_list: string;
   main_count: number;
   sideboard_count: number;
@@ -39,7 +40,7 @@ export default async function PlayerDecksPage({
   const [{ data: tournament }, { data: player }, { data: submissions }] = await Promise.all([
     adminInsforge.database.from("pdh_tournaments").select("id,name,code,format_code").eq("id", id).maybeSingle(),
     adminInsforge.database.from("pdh_players").select("id,first_name,last_name,email,created_at").eq("id", playerId).eq("tournament_id", id).maybeSingle(),
-    adminInsforge.database.from("pdh_deck_submissions").select("id,version_number,source,raw_list,main_count,sideboard_count,validation_status,validation_summary,is_current,submitted_at").eq("player_id", playerId).eq("tournament_id", id).order("version_number", { ascending: false }),
+    adminInsforge.database.from("pdh_deck_submissions").select("id,version_number,source,archetype,raw_list,main_count,sideboard_count,validation_status,validation_summary,is_current,submitted_at").eq("player_id", playerId).eq("tournament_id", id).order("version_number", { ascending: false }),
   ]);
   if (!tournament || !player) notFound();
 
@@ -82,7 +83,7 @@ export default async function PlayerDecksPage({
                   <span className={`grid size-10 place-items-center rounded-full ${submission.is_current ? "bg-emerald-100 text-emerald-900" : "bg-muted text-muted-foreground"}`}>
                     {submission.is_current ? <CheckCircle2 className="size-5" /> : <History className="size-5" />}
                   </span>
-                  <div><h2 className="text-2xl">Versión {submission.version_number}{submission.is_current ? " · Vigente" : ""}</h2><p className="text-xs text-muted-foreground">{formatChileDate(submission.submitted_at)} · {submission.source}</p></div>
+                  <div><h2 className="text-2xl">Versión {submission.version_number}{submission.is_current ? " · Vigente" : ""}</h2><p className="text-xs text-muted-foreground">{formatChileDate(submission.submitted_at)} · {submission.source}</p><p className="mt-1 text-sm">Arquetipo: {submission.archetype ?? "Sin especificar"}</p></div>
                 </div>
                 <div className="flex gap-2 text-xs font-bold"><span className="rounded-full bg-background px-3 py-1.5">{submission.main_count} main</span><span className="rounded-full bg-background px-3 py-1.5">{submission.sideboard_count} side</span></div>
               </div>

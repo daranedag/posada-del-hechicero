@@ -11,7 +11,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const [{ data: tournament }, { data: players }, { data: submissions }, { data: standings }] = await Promise.all([
     adminInsforge.database.from("pdh_tournaments").select("id,name,format_code,starts_at,location").eq("id", id).maybeSingle(),
     adminInsforge.database.from("pdh_players").select("id,first_name,last_name,email").eq("tournament_id", id),
-    adminInsforge.database.from("pdh_deck_submissions").select("id,player_id,version_number").eq("tournament_id", id).eq("is_current", true),
+    adminInsforge.database.from("pdh_deck_submissions").select("id,player_id,version_number,archetype").eq("tournament_id", id).eq("is_current", true),
     adminInsforge.database.from("pdh_standings").select("player_id,rank,match_points,wins,losses,draws").eq("tournament_id", id).order("rank", { ascending: true }),
   ]);
   if (!tournament) return NextResponse.json({ error: "Torneo no encontrado" }, { status: 404 });

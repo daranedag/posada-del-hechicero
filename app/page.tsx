@@ -1,4 +1,6 @@
 import { contactSectionBody } from "@/lib/contact";
+import { getInstagramPosts } from "@/lib/data/instagram";
+import { InstagramFeed } from "@/components/instagram-feed";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -146,8 +148,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
   );
 }
 
-function SocialSection({ section, items, media }: { section?: SiteSection; items: SiteItem[]; media: SiteMedia[] }) {
+async function SocialSection({ section, items, media }: { section?: SiteSection; items: SiteItem[]; media: SiteMedia[] }) {
   if (!section) return null;
+  const instagramPosts = await getInstagramPosts();
   return (
     <section id="redes" className="pdh-section pdh-container scroll-mt-28" aria-labelledby="social-title">
       <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr] lg:items-stretch">
@@ -172,7 +175,7 @@ function SocialSection({ section, items, media }: { section?: SiteSection; items
           </div>
         </div>
 
-        {media.length > 0 && (
+        {instagramPosts.length > 0 ? <InstagramFeed posts={instagramPosts} /> : media.length > 0 && (
           <div className={`grid gap-4 ${media.length === 1 ? "grid-cols-1" : "grid-cols-2 md:grid-cols-3"}`}>
             {media.map((item, index) => (
               <figure key={item.id} className={`group relative min-h-80 overflow-hidden rounded-[1.25rem] bg-muted ${media.length > 1 && index === media.length - 1 && media.length % 3 === 0 ? "col-span-2 md:col-span-1" : ""}`}>

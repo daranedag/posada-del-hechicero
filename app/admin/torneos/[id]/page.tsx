@@ -13,7 +13,7 @@ import type { Tournament } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 type Player = { id: string; first_name: string; last_name: string; email: string | null; created_at: string };
-type Submission = { id: string; player_id: string; version_number: number; main_count: number; sideboard_count: number; submitted_at: string };
+type Submission = { id: string; player_id: string; version_number: number; archetype: string | null; main_count: number; sideboard_count: number; submitted_at: string };
 type Standing = { player_id: string; rank: number; match_points: number; wins: number; losses: number; draws: number };
 
 export default async function TournamentAdminPage({
@@ -29,7 +29,7 @@ export default async function TournamentAdminPage({
   const [tournamentResult, playersResult, submissionsResult, standingsResult] = await Promise.all([
     adminInsforge.database.from("pdh_tournaments").select("id,code,name,format_code,starts_at,submission_deadline,location,max_players,public_notes,status").eq("id", id).maybeSingle(),
     adminInsforge.database.from("pdh_players").select("id,first_name,last_name,email,created_at").eq("tournament_id", id).order("last_name", { ascending: true }),
-    adminInsforge.database.from("pdh_deck_submissions").select("id,player_id,version_number,main_count,sideboard_count,submitted_at").eq("tournament_id", id).eq("is_current", true),
+    adminInsforge.database.from("pdh_deck_submissions").select("id,player_id,version_number,archetype,main_count,sideboard_count,submitted_at").eq("tournament_id", id).eq("is_current", true),
     adminInsforge.database.from("pdh_standings").select("player_id,rank,match_points,wins,losses,draws").eq("tournament_id", id),
   ]);
   if (!tournamentResult.data) notFound();
@@ -107,7 +107,7 @@ export default async function TournamentAdminPage({
                       <Link href={`/admin/torneos/${id}/jugadores/${player.id}`} className="font-bold underline decoration-copper/40 underline-offset-4 hover:text-teal">{player.first_name} {player.last_name}</Link>
                       <p className="mt-1 text-xs text-muted-foreground">{player.email ?? "Sin email"}</p>
                     </td>
-                    <td className="p-4">{submission ? <Link href={`/admin/torneos/${id}/jugadores/${player.id}`} className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">v{submission.version_number} · {submission.main_count}+{submission.sideboard_count}</Link> : <span className="text-xs text-red-700">Sin lista</span>}</td>
+                    <td className="p-4">{submission ? <><Link href={`/admin/torneos/${id}/jugadores/${player.id}`} className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900">v{submission.version_number} · {submission.main_count}+{submission.sideboard_count}</Link><p className="mt-2 text-xs text-muted-foreground">{submission.archetype ?? "Sin arquetipo"}</p></> : <span className="text-xs text-red-700">Sin lista</span>}</td>
                     {[["rank", standing?.rank], ["points", standing?.match_points], ["wins", standing?.wins], ["losses", standing?.losses], ["draws", standing?.draws]].map(([field, value]) => <td key={String(field)} className="p-4"><input form={standingsFormId} name={`${field}:${player.id}`} type="number" min="0" defaultValue={value ?? ""} className="h-9 w-20 rounded-md border border-input bg-background px-2" /></td>)}
                     <td className="p-4 text-right">
                       <form action={deleteTournamentPlayerAction} className="inline-flex">

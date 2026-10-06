@@ -93,6 +93,25 @@ La subida es directa desde el navegador a ImageKit para evitar el límite de cue
 
 ## Verificación
 
+### Publicaciones de Instagram
+
+La sección Redes muestra hasta tres publicaciones recientes de `@posada.delhechicero`
+cuando `IG_TOKEN` está configurado en `.env.local` o en las variables privadas del
+alojamiento. El token se usa únicamente en el servidor y no debe tener el prefijo
+`NEXT_PUBLIC_`. Los resultados se almacenan en la caché de Next.js y se revalidan
+al recibir visitas, con un intervalo de 15 minutos. No es una tarea programada.
+Las tarjetas muestran portadas de carruseles o miniaturas de video y enlazan a
+Instagram. Si no hay token, falla la consulta, la respuesta está vacía o pertenece
+a otra cuenta, se conserva la galería configurada en `/admin/sitio`.
+
+Esta integración todavía no renueva el token automáticamente. Antes de su
+vencimiento debe renovarse y actualizarse en el alojamiento. La renovación
+automática requiere guardar el token vigente y su vencimiento en almacenamiento
+privado modificable y ejecutar una tarea programada; una variable de entorno no
+se actualiza por sí sola. La cuenta personal de prueba no se utiliza.
+
+Prueba específica: `pnpm exec node --experimental-strip-types --test tests/instagram-posts.test.ts`.
+
 ```text
 pnpm test
 pnpm typecheck
