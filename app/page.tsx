@@ -130,7 +130,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ m
         </div>
       </section>
 
-      <section id="calendario" className="pdh-section pdh-container scroll-mt-28" aria-labelledby="calendar-title">
+      <section id="calendario" className="pdh-container scroll-mt-28 pb-6 pt-16 sm:pb-8 sm:pt-24" aria-labelledby="calendar-title">
         <div className="mb-8 max-w-3xl">
           <p className="pdh-kicker"><CalendarDays className="size-4" /> Agenda de la Posada</p>
           <h2 id="calendar-title" className="mt-4 text-balance text-4xl leading-none sm:text-5xl">Calendario de actividades</h2>
@@ -152,7 +152,7 @@ async function SocialSection({ section, items, media }: { section?: SiteSection;
   if (!section) return null;
   const instagramPosts = await getInstagramPosts();
   return (
-    <section id="redes" className="pdh-section pdh-container scroll-mt-28" aria-labelledby="social-title">
+    <section id="redes" className="pdh-container scroll-mt-28 pb-12 pt-6 sm:pb-16 sm:pt-8" aria-labelledby="social-title">
       <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr] lg:items-stretch">
         <div className="flex flex-col justify-between rounded-[1.4rem] bg-primary p-8 text-primary-foreground sm:p-10">
           <div>
@@ -194,7 +194,7 @@ function AddressSection({ section, items }: { section?: SiteSection; items: Site
   if (!section) return null;
   return (
     <section id="direccion" className="scroll-mt-28 border-y border-white/10 bg-[#1b1025] text-[#faf3fc]" aria-labelledby="address-title">
-      <div className="pdh-container grid gap-8 py-16 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-20">
+      <div className="pdh-container grid gap-8 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-12">
         <div>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#f08ac3]"><MapPin className="size-4" /> {section.kicker}</p>
           <h2 id="address-title" className="mt-4 max-w-2xl text-balance text-4xl leading-none sm:text-5xl">{section.title}</h2>
