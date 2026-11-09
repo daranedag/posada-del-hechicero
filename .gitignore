@@ -29,3 +29,8 @@ out/
 *.log
 .vercel/
 *.tsbuildinfo
+
+# Database backups and Neon workspace credentials
+*.sql.gz
+.neon
+.migration/

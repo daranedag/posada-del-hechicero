@@ -1,8 +1,8 @@
-import { publicInsforge } from "@/lib/insforge/public";
+import { publicDb } from "@/lib/db/public";
 import type { Tournament } from "@/lib/types";
 
 export async function getPublicTournaments(): Promise<Tournament[]> {
-  const { data, error } = await publicInsforge.database
+  const { data, error } = await publicDb
     .from("pdh_tournaments")
     .select("id,code,name,format_code,starts_at,submission_deadline,location,max_players,public_notes,status")
     .in("status", ["open", "locked", "completed"])
@@ -13,16 +13,16 @@ export async function getPublicTournaments(): Promise<Tournament[]> {
     console.error("No se pudieron cargar los torneos", error);
     return [];
   }
-  return (data ?? []) as Tournament[];
+  return (data ?? []) as unknown as Tournament[];
 }
 
 export async function getTournamentByCode(code: string): Promise<Tournament | null> {
-  const { data, error } = await publicInsforge.database
+  const { data, error } = await publicDb
     .from("pdh_tournaments")
     .select("id,code,name,format_code,starts_at,submission_deadline,location,max_players,public_notes,status")
     .eq("code", code.toUpperCase())
     .maybeSingle();
 
   if (error) return null;
-  return data as Tournament | null;
+  return data as unknown as Tournament | null;
 }

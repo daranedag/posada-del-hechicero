@@ -31,18 +31,13 @@ BEGIN
   IF public.pdh_event_is_public(original_id) OR NOT public.pdh_event_is_public(split_id) THEN
     RAISE EXCEPTION 'Public visibility is incorrect';
   END IF;
-  IF has_function_privilege('anon', 'public.pdh_save_calendar_event(uuid,text,date,timestamptz,jsonb)', 'EXECUTE')
-    OR has_function_privilege('authenticated', 'public.pdh_save_calendar_event(uuid,text,date,timestamptz,jsonb)', 'EXECUTE')
-    OR has_table_privilege('anon', 'public.pdh_event_exceptions', 'INSERT') THEN
+  IF has_function_privilege('pdh_reader', 'public.pdh_save_calendar_event(uuid,text,date,timestamptz,jsonb)', 'EXECUTE')
+    OR has_table_privilege('pdh_reader', 'public.pdh_event_exceptions', 'INSERT') THEN
     RAISE EXCEPTION 'Public writes must be denied';
   END IF;
-  SET LOCAL ROLE anon;
+  SET LOCAL ROLE pdh_reader;
   SELECT count(*) INTO count_rows FROM public.pdh_event_exceptions WHERE event_id IN (original_id, split_id);
   IF count_rows <> 1 THEN RAISE EXCEPTION 'Anonymous RLS exposed draft exceptions or hid published ones'; END IF;
-  RESET ROLE;
-  SET LOCAL ROLE authenticated;
-  SELECT count(*) INTO count_rows FROM public.pdh_event_exceptions WHERE event_id IN (original_id, split_id);
-  IF count_rows <> 1 THEN RAISE EXCEPTION 'Authenticated RLS visibility is incorrect'; END IF;
   RESET ROLE;
   BEGIN
     PERFORM public.pdh_save_calendar_event(split_id, 'future', '2026-09-25', '2000-01-01'::timestamptz, payload);

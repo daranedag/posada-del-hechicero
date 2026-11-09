@@ -33,8 +33,8 @@ BEGIN
     IF SQLERRM <> 'ROLLBACK_FIXTURE' THEN RAISE; END IF;
   END;
   IF (SELECT count(*) FROM public.pdh_events) <> count_before THEN RAISE EXCEPTION 'Partial creation survived rollback'; END IF;
-  IF has_function_privilege('anon','public.pdh_save_calendar_event_with_registration(uuid,text,date,timestamptz,jsonb,uuid,jsonb)','EXECUTE')
-    OR has_function_privilege('authenticated','public.pdh_save_calendar_event_with_registration(uuid,text,date,timestamptz,jsonb,uuid,jsonb)','EXECUTE') THEN
+  IF has_function_privilege('pdh_reader','public.pdh_save_calendar_event_with_registration(uuid,text,date,timestamptz,jsonb,uuid,jsonb)','EXECUTE')
+    THEN
     RAISE EXCEPTION 'Public registration writes must be denied';
   END IF;
   DELETE FROM public.pdh_tournaments WHERE id = tournament;

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { notFound } from "next/navigation";
 import { DeckSubmissionForm } from "@/components/deck-submission-form";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import { getTournamentByCode } from "@/lib/data/catalog";
 import { isFutureDate } from "@/lib/dates";
 
@@ -13,9 +13,9 @@ export default async function EditDeckPage({ params }: { params: Promise<{ code:
   const tournament = await getTournamentByCode(code);
   if (!tournament || tournament.status !== "open" || !isFutureDate(tournament.submission_deadline)) notFound();
   const tokenHash = createHash("sha256").update(token).digest("hex");
-  const { data: player } = await adminInsforge.database.from("pdh_players").select("id,first_name,last_name,email").eq("tournament_id", tournament.id).eq("token_hash", tokenHash).maybeSingle();
+  const { data: player } = await adminDb.from("pdh_players").select("id,first_name,last_name,email").eq("tournament_id", tournament.id).eq("token_hash", tokenHash).maybeSingle();
   if (!player) notFound();
-  const { data: submission } = await adminInsforge.database.from("pdh_deck_submissions").select("source,raw_list,archetype").eq("player_id", (player as { id: string }).id).eq("is_current", true).maybeSingle();
+  const { data: submission } = await adminDb.from("pdh_deck_submissions").select("source,raw_list,archetype").eq("player_id", (player as { id: string }).id).eq("is_current", true).maybeSingle();
   if (!submission) notFound();
   const typedPlayer = player as { first_name: string; last_name: string; email: string | null };
   const typedSubmission = submission as { source: string; raw_list: string; archetype: string | null };

@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { AdminNav } from "@/components/admin-nav";
 import { EventCalendar } from "@/components/events/event-calendar";
 import { requireAdmin } from "@/lib/auth/admin";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import { chileDate, validMonth, weekdays, type CalendarEvent, type EventOccurrence } from "@/lib/events/calendar";
 import { getCalendarMonth } from "@/lib/events/data";
 
@@ -22,7 +22,7 @@ export default async function AdminEventsPage({ searchParams }: { searchParams: 
   let calendarError = "";
   try { events = await getCalendarMonth(month, true); }
   catch { calendarError = "No pudimos cargar el calendario. Vuelve a intentar en un momento."; }
-  const { data, error, count } = await adminInsforge.database.from("pdh_events")
+  const { data, error, count } = await adminDb.from("pdh_events")
     .select("id,title,status,starts_at,recurrence_days,recurrence_until", { count: "exact" })
     .order("updated_at", { ascending: false }).order("id").range((page - 1) * 20, page * 20 - 1);
   const templates = (data ?? []) as Pick<CalendarEvent, "id" | "title" | "status" | "starts_at" | "recurrence_days" | "recurrence_until">[];

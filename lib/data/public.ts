@@ -1,4 +1,4 @@
-import { publicInsforge } from "@/lib/insforge/public";
+import { publicDb } from "@/lib/db/public";
 
 export interface SiteSetting {
   key: string;
@@ -9,7 +9,7 @@ export interface SiteSetting {
 }
 
 export async function getSiteSetting(key: string): Promise<SiteSetting | null> {
-  const { data, error } = await publicInsforge.database
+  const { data, error } = await publicDb
     .from("pdh_site_settings")
     .select("key,label,value_text,image_url,image_key")
     .eq("key", key)
@@ -20,5 +20,9 @@ export async function getSiteSetting(key: string): Promise<SiteSetting | null> {
     return null;
   }
 
-  return data as SiteSetting | null;
+  const setting = data as SiteSetting | null;
+  if (setting?.image_url === "https://556adz76.us-east.insforge.app/api/storage/buckets/pdh_media/objects/site%2Fposada-hero.png") {
+    return { ...setting, image_url: "/images/posada-hero.png" };
+  }
+  return setting;
 }

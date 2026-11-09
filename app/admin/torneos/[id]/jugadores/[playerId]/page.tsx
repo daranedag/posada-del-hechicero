@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { AdminNav } from "@/components/admin-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { formatChileDate } from "@/lib/dates";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -38,16 +38,16 @@ export default async function PlayerDecksPage({
   await requireAdmin();
   const { id, playerId } = await params;
   const [{ data: tournament }, { data: player }, { data: submissions }] = await Promise.all([
-    adminInsforge.database.from("pdh_tournaments").select("id,name,code,format_code").eq("id", id).maybeSingle(),
-    adminInsforge.database.from("pdh_players").select("id,first_name,last_name,email,created_at").eq("id", playerId).eq("tournament_id", id).maybeSingle(),
-    adminInsforge.database.from("pdh_deck_submissions").select("id,version_number,source,archetype,raw_list,main_count,sideboard_count,validation_status,validation_summary,is_current,submitted_at").eq("player_id", playerId).eq("tournament_id", id).order("version_number", { ascending: false }),
+    adminDb.from("pdh_tournaments").select("id,name,code,format_code").eq("id", id).maybeSingle(),
+    adminDb.from("pdh_players").select("id,first_name,last_name,email,created_at").eq("id", playerId).eq("tournament_id", id).maybeSingle(),
+    adminDb.from("pdh_deck_submissions").select("id,version_number,source,archetype,raw_list,main_count,sideboard_count,validation_status,validation_summary,is_current,submitted_at").eq("player_id", playerId).eq("tournament_id", id).order("version_number", { ascending: false }),
   ]);
   if (!tournament || !player) notFound();
 
   const submissionRows = (submissions ?? []) as Submission[];
   const submissionIds = submissionRows.map((submission) => submission.id);
   const { data: cards } = submissionIds.length
-    ? await adminInsforge.database.from("pdh_deck_cards").select("submission_id,board,quantity,card_name,legality").in("submission_id", submissionIds).order("card_name", { ascending: true })
+    ? await adminDb.from("pdh_deck_cards").select("submission_id,board,quantity,card_name,legality").in("submission_id", submissionIds).order("card_name", { ascending: true })
     : { data: [] };
   const cardRows = (cards ?? []) as Card[];
   const typedTournament = tournament as { name: string; code: string; format_code: string };

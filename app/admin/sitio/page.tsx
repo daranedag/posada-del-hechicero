@@ -7,7 +7,7 @@ import { AdminNav } from "@/components/admin-nav";
 import { FormSubmitButton } from "@/components/form-submit-button";
 import { requireAdmin } from "@/lib/auth/admin";
 import type { SiteItem, SiteMedia, SiteSection } from "@/lib/data/site-content";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import {
   createSiteItemAction,
   deleteSiteItemAction,
@@ -44,13 +44,13 @@ const sectionHints: Record<SiteSection["key"], string> = {
 export default async function SiteAdminPage({ searchParams }: { searchParams: Promise<{ estado?: string }> }) {
   await requireAdmin();
   const [{ data: sectionsData }, { data: itemsData }, { data: mediaData }] = await Promise.all([
-    adminInsforge.database.from("pdh_site_sections").select("key,admin_label,kicker,title,body,sort_order,is_visible").order("sort_order", { ascending: true }),
-    adminInsforge.database.from("pdh_site_items").select("id,section_key,item_type,title,body,href,sort_order,is_visible").order("sort_order", { ascending: true }),
-    adminInsforge.database.from("pdh_site_media").select("id,section_key,image_url,image_key,alt_text,caption,sort_order,is_visible").order("sort_order", { ascending: true }),
+    adminDb.from("pdh_site_sections").select("key,admin_label,kicker,title,body,sort_order,is_visible").order("sort_order", { ascending: true }),
+    adminDb.from("pdh_site_items").select("id,section_key,item_type,title,body,href,sort_order,is_visible").order("sort_order", { ascending: true }),
+    adminDb.from("pdh_site_media").select("id,section_key,image_url,image_key,alt_text,caption,sort_order,is_visible").order("sort_order", { ascending: true }),
   ]);
-  const sections = (sectionsData ?? []) as SiteSection[];
-  const items = (itemsData ?? []) as SiteItem[];
-  const media = (mediaData ?? []) as SiteMedia[];
+  const sections = (sectionsData ?? []) as unknown as SiteSection[];
+  const items = (itemsData ?? []) as unknown as SiteItem[];
+  const media = (mediaData ?? []) as unknown as SiteMedia[];
   const { estado } = await searchParams;
 
   return (

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/admin";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 
 const idSchema = z.string().uuid();
 const statusSchema = z.enum(["new", "read", "archived"]);
@@ -15,7 +15,7 @@ export async function updateContactStatusAction(formData: FormData) {
   const status = statusSchema.safeParse(formData.get("status"));
   if (!id.success || !status.success) redirect("/admin/consultas?estado=error");
 
-  const { error } = await adminInsforge.database
+  const { error } = await adminDb
     .from("pdh_contact_submissions")
     .update({ status: status.data })
     .eq("id", id.data);
@@ -31,7 +31,7 @@ export async function deleteContactSubmissionAction(formData: FormData) {
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) redirect("/admin/consultas?estado=error");
 
-  const { error } = await adminInsforge.database.from("pdh_contact_submissions").delete().eq("id", id.data);
+  const { error } = await adminDb.from("pdh_contact_submissions").delete().eq("id", id.data);
   if (error) redirect("/admin/consultas?estado=error");
 
   revalidatePath("/admin");

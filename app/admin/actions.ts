@@ -7,7 +7,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/admin";
 import { parseDayFirstDateTime } from "@/lib/dates";
 import { chileInstant } from "@/lib/events/calendar";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 
 const tournamentSchema = z.object({
   name: z.string().trim().min(3).max(180),
@@ -44,7 +44,7 @@ export async function createTournamentAction(formData: FormData) {
   const deadline = input.data.deadline;
 
   const code = createCode();
-  const { data, error } = await adminInsforge.database.from("pdh_tournaments").insert([{
+  const { data, error } = await adminDb.from("pdh_tournaments").insert([{
     owner_id: user.id, code, name: input.data.name, format_code: input.data.formatCode, starts_at: startsAt,
     submission_deadline: deadline, location: input.data.location, max_players: input.data.maxPlayers ?? null,
     public_notes: input.data.notes || null, status: "open",
@@ -60,7 +60,7 @@ export async function updateTournamentStatusAction(formData: FormData) {
   const status = tournamentStatusSchema.safeParse(formData.get("status"));
   if (!id.success || !status.success) redirect("/admin?estado=torneo-error");
 
-  const { data, error } = await adminInsforge.database
+  const { data, error } = await adminDb
     .from("pdh_tournaments")
     .update({ status: status.data })
     .eq("id", id.data)
@@ -97,7 +97,7 @@ async function updateTournamentDateTime(formData: FormData, name: "startsAt" | "
   const instant = tournamentDateTime(formData, name);
   if (!instant) redirect(`/admin/torneos/${id.data}?estado=error-${status}`);
 
-  const { data, error } = await adminInsforge.database
+  const { data, error } = await adminDb
     .from("pdh_tournaments")
     .update({ [column]: instant })
     .eq("id", id.data)
@@ -125,7 +125,7 @@ export async function deleteTournamentAction(formData: FormData) {
   const id = tournamentIdSchema.safeParse(formData.get("id"));
   if (!id.success) redirect("/admin?estado=torneo-error");
 
-  const { data, error } = await adminInsforge.database
+  const { data, error } = await adminDb
     .from("pdh_tournaments")
     .delete()
     .eq("id", id.data)
@@ -148,7 +148,7 @@ export async function deleteTournamentPlayerAction(formData: FormData) {
   if (!tournamentId.success) redirect("/admin?estado=jugador-error");
   if (!playerId.success) redirect(`/admin/torneos/${tournamentId.data}?estado=error-jugador`);
 
-  const { data, error } = await adminInsforge.database
+  const { data, error } = await adminDb
     .from("pdh_players")
     .delete()
     .eq("id", playerId.data)
@@ -173,9 +173,9 @@ export async function saveStandingsAction(formData: FormData) {
     wins: Number(formData.get(`wins:${playerId}`) ?? 0), losses: Number(formData.get(`losses:${playerId}`) ?? 0), draws: Number(formData.get(`draws:${playerId}`) ?? 0),
   })).filter((row) => row.rank > 0);
   if (!rows.length || new Set(rows.map((row) => row.rank)).size !== rows.length) return;
-  const { data: backup } = await adminInsforge.database.from("pdh_standings").select("tournament_id,player_id,rank,match_points,wins,losses,draws,opponent_match_win_pct,game_win_pct,opponent_game_win_pct").eq("tournament_id", tournamentId);
-  await adminInsforge.database.from("pdh_standings").delete().eq("tournament_id", tournamentId);
-  const { error } = await adminInsforge.database.from("pdh_standings").insert(rows);
-  if (error && backup?.length) await adminInsforge.database.from("pdh_standings").insert(backup);
+  const { data: backup } = await adminDb.from("pdh_standings").select("tournament_id,player_id,rank,match_points,wins,losses,draws,opponent_match_win_pct,game_win_pct,opponent_game_win_pct").eq("tournament_id", tournamentId);
+  await adminDb.from("pdh_standings").delete().eq("tournament_id", tournamentId);
+  const { error } = await adminDb.from("pdh_standings").insert(rows);
+  if (error && backup?.length) await adminDb.from("pdh_standings").insert(backup);
   revalidatePath(`/admin/torneos/${tournamentId}`);
 }

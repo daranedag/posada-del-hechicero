@@ -5,26 +5,19 @@
 - Use pnpm exclusively for dependency installation and project scripts.
 - Do not create or use npm, Yarn, or Bun lockfiles.
 
-<!-- INSFORGE:START -->
-## InsForge backend
+## Neon backend
 
-This project uses [InsForge](https://insforge.dev): an all-in-one, open-source Postgres-based backend (BaaS) that gives this app a database, authentication, file storage, edge functions, realtime, an AI model gateway, and payments through one platform.
+- Project: **posada-del-hechicero** (`aged-glitter-54886997`), AWS São Paulo.
+- Use the installed Neon plugin and its `neon`, `neon-postgres` and `neon-auth` guidance.
+- The CLI reads the gitignored `.neon` link. Credentials belong in `.env.local`; never print or commit them.
+- `neon.ts` declares managed Neon Auth. Use pooled `DATABASE_URL` for the app and direct `DATABASE_URL_UNPOOLED` for migrations.
+- Create a Neon branch for schema changes and test there before applying to production.
+- Application tables use `pdh_`. The consolidated schema is `migrations/neon/20261109_pdh.sql`; earlier root migrations are historical InsForge migrations, not Neon setup scripts.
+- SQL runs only on the server via `lib/db`. Public reads use the `pdh_reader` role and RLS; private writes require `requireAdmin` or an explicitly validated public submission flow.
+- Neon Auth identities map to stable application UUIDs through `pdh_users`. Preserve those IDs and the foreign keys from administrators and tournaments. Only verified emails allowed by `PDH_ADMIN_EMAILS` may administer the site.
+- ImageKit stores new images. Keep image URLs and `imagekit:<fileId>` keys together.
+- SQL backups and `.migration/` contain private data and are gitignored.
 
-- **Project:** **DieGui Dev** (API base `https://556adz76.us-east.insforge.app`)
-- **Skills:** these InsForge skills are installed for supported coding agents. Reach for them before implementing any InsForge feature instead of guessing the API:
-  - `insforge`: app code with the `@insforge/sdk` client (database CRUD, auth, storage, edge functions, realtime, AI, email, and Stripe payments).
-  - `insforge-cli`: backend and infrastructure via the `insforge` CLI (projects, SQL, migrations, RLS policies, storage buckets, functions, secrets, payment setup, schedules, deploys).
-  - `insforge-debug`: diagnosing failures (SDK/HTTP errors, RLS denials, auth and OAuth issues) and running security or performance audits.
-  - `insforge-integrations`: wiring external auth providers (Clerk, Auth0, WorkOS, Better Auth, etc.) for JWT-based RLS, or the OKX x402 payment facilitator.
-  - `find-skills`: discovering additional skills on demand.
-- **Credentials:** app code reads keys from `.env.local`; the CLI reads `.insforge/project.json`. Never hardcode or commit keys.
-
-Key patterns:
-
-- Database inserts take an array: `insert([{ ... }])`.
-- Reference users with `auth.users(id)`; use `auth.uid()` in RLS policies.
-- For storage uploads, persist both the returned `url` and `key`.
-<!-- INSFORGE:END -->
 
 <!-- BEGIN:nextjs-agent-rules -->
 

@@ -7,7 +7,7 @@ import { AdminNav } from "@/components/admin-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { formatChileDate } from "@/lib/dates";
 import { TournamentDateTimeFields } from "@/components/tournament-date-time-fields";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import type { Tournament } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -27,13 +27,13 @@ export default async function TournamentAdminPage({
   const { id } = await params;
   const { estado } = await searchParams;
   const [tournamentResult, playersResult, submissionsResult, standingsResult] = await Promise.all([
-    adminInsforge.database.from("pdh_tournaments").select("id,code,name,format_code,starts_at,submission_deadline,location,max_players,public_notes,status").eq("id", id).maybeSingle(),
-    adminInsforge.database.from("pdh_players").select("id,first_name,last_name,email,created_at").eq("tournament_id", id).order("last_name", { ascending: true }),
-    adminInsforge.database.from("pdh_deck_submissions").select("id,player_id,version_number,archetype,main_count,sideboard_count,submitted_at").eq("tournament_id", id).eq("is_current", true),
-    adminInsforge.database.from("pdh_standings").select("player_id,rank,match_points,wins,losses,draws").eq("tournament_id", id),
+    adminDb.from("pdh_tournaments").select("id,code,name,format_code,starts_at,submission_deadline,location,max_players,public_notes,status").eq("id", id).maybeSingle(),
+    adminDb.from("pdh_players").select("id,first_name,last_name,email,created_at").eq("tournament_id", id).order("last_name", { ascending: true }),
+    adminDb.from("pdh_deck_submissions").select("id,player_id,version_number,archetype,main_count,sideboard_count,submitted_at").eq("tournament_id", id).eq("is_current", true),
+    adminDb.from("pdh_standings").select("player_id,rank,match_points,wins,losses,draws").eq("tournament_id", id),
   ]);
   if (!tournamentResult.data) notFound();
-  const tournament = tournamentResult.data as Tournament;
+  const tournament = tournamentResult.data as unknown as Tournament;
   const players = (playersResult.data ?? []) as Player[];
   const submissions = new Map(((submissionsResult.data ?? []) as Submission[]).map((item) => [item.player_id, item]));
   const standings = new Map(((standingsResult.data ?? []) as Standing[]).map((item) => [item.player_id, item]));

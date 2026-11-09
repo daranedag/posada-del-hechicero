@@ -3,7 +3,7 @@ import { AdminDeleteButton } from "@/components/admin-delete-button";
 import { AdminNav } from "@/components/admin-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { formatChileDate } from "@/lib/dates";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import type { ContactSubmission } from "@/lib/types";
 import {
   deleteContactSubmissionAction,
@@ -21,12 +21,12 @@ const statusLabels: Record<ContactSubmission["status"], string> = {
 
 export default async function ContactSubmissionsPage({ searchParams }: { searchParams: Promise<{ estado?: string }> }) {
   await requireAdmin();
-  const { data } = await adminInsforge.database
+  const { data } = await adminDb
     .from("pdh_contact_submissions")
     .select("id,name,email,subject,message,status,created_at")
     .order("created_at", { ascending: false })
     .limit(200);
-  const submissions = (data ?? []) as ContactSubmission[];
+  const submissions = (data ?? []) as unknown as ContactSubmission[];
   const { estado } = await searchParams;
 
   return (

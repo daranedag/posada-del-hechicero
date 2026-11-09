@@ -1,6 +1,6 @@
 # La Posada del Hechicero
 
-Prototipo comercial y funcional para la tienda de juegos de mesa y TCG de Valdivia. Incluye sitio público, calendario conectado a InsForge y un portal completo de torneos de Magic: The Gathering.
+Prototipo comercial y funcional para la tienda de juegos de mesa y TCG de Valdivia. Incluye sitio público, calendario conectado a Neon y un portal completo de torneos de Magic: The Gathering.
 
 ## Funcionalidades
 
@@ -20,7 +20,7 @@ Prototipo comercial y funcional para la tienda de juegos de mesa y TCG de Valdiv
 ## Stack
 
 - Next.js 16, React 19, TypeScript y Tailwind CSS.
-- InsForge para PostgreSQL y autenticación; ImageKit para las nuevas imágenes.
+- Neon para PostgreSQL y autenticación con Google; ImageKit para las imágenes.
 - Scryfall como fuente de datos y legalidad de cartas.
 - Despliegue previsto en Vercel.
 
@@ -34,22 +34,22 @@ Prototipo comercial y funcional para la tienda de juegos de mesa y TCG de Valdiv
 Variables requeridas:
 
 ```text
-NEXT_PUBLIC_INSFORGE_URL=
-NEXT_PUBLIC_INSFORGE_ANON_KEY=
-INSFORGE_URL=
-INSFORGE_API_KEY=
+DATABASE_URL=
+DATABASE_URL_UNPOOLED=
+NEON_AUTH_BASE_URL=
+NEON_AUTH_COOKIE_SECRET=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_INSTAGRAM_URL=https://www.instagram.com/posada.delhechicero/
 PDH_ADMIN_EMAILS=admin@example.com,otro-admin@example.com
 ```
 
-El panel usa el SSO de Google de InsForge. `PDH_ADMIN_EMAILS` es una lista privada, separada por comas, punto y coma o espacios, y es la autoridad para conceder acceso: una cuenta autenticada solo entra si su correo verificado aparece allí. Al autorizarse por primera vez se registra automáticamente en `pdh_admins`; si deja de estar permitida, su registro se revoca al siguiente acceso. Las claves privadas solo se usan en el servidor y `.env.local` no se versiona.
+El panel usa Google mediante Neon Auth. `PDH_ADMIN_EMAILS` es una lista privada, separada por comas, punto y coma o espacios, y es la autoridad para conceder acceso: una cuenta autenticada solo entra si su correo verificado aparece allí. Al autorizarse por primera vez se registra automáticamente en `pdh_admins`; si deja de estar permitida, su registro se revoca al siguiente acceso. Las claves privadas solo se usan en el servidor y `.env.local` no se versiona.
 
-## InsForge
+## Neon
 
-El proyecto está vinculado a **DieGui Dev**. Todo el dominio de esta aplicación está aislado con el prefijo `pdh_`.
+El proyecto está vinculado a **posada-del-hechicero** en Neon. Todo el dominio de esta aplicación usa el prefijo `pdh_`. La migración consolidada está en `migrations/neon/20261109_pdh.sql`; las migraciones anteriores de la raíz se conservan como historial de InsForge y no deben aplicarse a Neon. Consulta [el informe de migración](docs/neon-migration.md) para el inventario, importación, verificación y configuración de acceso.
 
-Las migraciones reproducibles están en `migrations/`:
+Migraciones históricas en `migrations/`:
 
 - `20260830213000_pdh-initial-schema.sql`: catálogo, eventos, torneos, jugadores, decklists, cartas, standings y políticas RLS.
 - `20260830224000_pdh-site-settings.sql`: contenido editable e imagen principal.
@@ -64,7 +64,7 @@ El modelo editorial usa exclusivamente tablas con prefijo `pdh_`:
 - `pdh_site_media`: fotografías por sección; conserva URL y clave de almacenamiento para poder eliminarlas correctamente.
 - `pdh_contact_submissions`: historial de consultas privadas anteriores; el formulario actual no guarda mensajes en la base de datos.
 
-Las imágenes existentes en InsForge siguen funcionando. Las nuevas imágenes se suben a ImageKit y se vinculan en `pdh_site_media`: `image_url` contiene la URL pública y `image_key` guarda `imagekit:<fileId>`. No se necesita una migración. Quitar o reemplazar una imagen de ImageKit en el sitio conserva el archivo en la biblioteca, porque puede estar usado en otras secciones. Los archivos subidos que todavía no se guardaron también quedan disponibles allí.
+Las fotografías existentes se conservan en ImageKit o archivos locales; la referencia histórica de InsForge a la imagen principal se resuelve a `/images/posada-hero.png`. Las nuevas imágenes se suben a ImageKit y se vinculan en `pdh_site_media`: `image_url` contiene la URL pública y `image_key` guarda `imagekit:<fileId>`. Quitar o reemplazar una imagen de ImageKit en el sitio conserva el archivo en la biblioteca, porque puede estar usado en otras secciones. Los archivos subidos que todavía no se guardaron también quedan disponibles allí.
 
 ## ImageKit en local
 
@@ -119,7 +119,7 @@ pnpm lint
 pnpm build
 ```
 
-Antes de desplegar en Vercel, copia las mismas variables de entorno, cambia `NEXT_PUBLIC_APP_URL` por el dominio definitivo y autoriza `<dominio>/api/auth/callback` como URL de retorno en la configuración de autenticación de InsForge.
+Antes de desplegar en Vercel, configura las variables privadas de Neon, cambia `NEXT_PUBLIC_APP_URL` por el dominio definitivo y registra su origen con `neon neon-auth domain add https://tu-dominio`. Configura credenciales Google propias en Neon Auth para producción.
 
 ## Calendario de eventos
 
@@ -131,7 +131,7 @@ Antes de desplegar en Vercel, copia las mismas variables de entorno, cambia `NEX
 
 La migración `20260915010000_pdh-event-calendar.sql` agrega campos de repetición a `pdh_events`, la tabla `pdh_event_exceptions` y la función transaccional `pdh_save_calendar_event`. Las escrituras se realizan exclusivamente desde acciones de servidor que verifican al administrador. Los visitantes solo pueden leer información publicada. No se modifican las tablas de torneos.
 
-El backend vinculado usa InsForge 2.0.2: no dispone de ramas ni del gestor nuevo de migraciones. Esta migración se aplicó mediante la CLI con `scripts/insforge-sql.mjs`, después de un ensayo SQL reversible. El script ejecuta todo como una única operación atómica; `--rehearse` revierte tanto esquema como datos de prueba. No vuelvas a aplicar una migración ya aplicada.
+El calendario y sus funciones están incluidos en el esquema consolidado de Neon. Las pruebas de integración se ejecutan en una rama `migration-*`, con fixtures que se revierten o eliminan al terminar.
 
 Validación:
 
@@ -141,8 +141,7 @@ pnpm lint
 pnpm typecheck
 pnpm build
 # Integración con el backend configurado, sin cambios persistentes:
-pnpm exec node --env-file=.env.local tests/event-calendar-access.mjs
-pnpm exec node scripts/insforge-sql.mjs --rehearse tests/event-calendar-db.sql
+pnpm exec node --conditions=react-server --import tsx --env-file=.env.neon-migration.local tests/neon-integration.ts
 # Con pnpm dev --hostname 127.0.0.1 --port 3100 activo y Chrome en macOS:
 pnpm exec node tests/event-calendar-browser.mjs
 ```

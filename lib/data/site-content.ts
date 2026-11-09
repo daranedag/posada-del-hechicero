@@ -1,5 +1,5 @@
 import { contactDescription } from "@/lib/contact";
-import { publicInsforge } from "@/lib/insforge/public";
+import { publicDb } from "@/lib/db/public";
 
 export const SITE_SECTION_KEYS = [
   "hero",
@@ -196,15 +196,15 @@ export const defaultHomeContent: HomeContent = {
 
 export async function getHomeContent(): Promise<HomeContent> {
   const [sectionsResult, itemsResult, mediaResult] = await Promise.all([
-    publicInsforge.database
+    publicDb
       .from("pdh_site_sections")
       .select("key,admin_label,kicker,title,body,sort_order,is_visible")
       .order("sort_order", { ascending: true }),
-    publicInsforge.database
+    publicDb
       .from("pdh_site_items")
       .select("id,section_key,item_type,title,body,href,sort_order,is_visible")
       .order("sort_order", { ascending: true }),
-    publicInsforge.database
+    publicDb
       .from("pdh_site_media")
       .select("id,section_key,image_url,image_key,alt_text,caption,sort_order,is_visible")
       .order("sort_order", { ascending: true }),
@@ -220,8 +220,8 @@ export async function getHomeContent(): Promise<HomeContent> {
   }
 
   return {
-    sections: (sectionsResult.data ?? []) as SiteSection[],
-    items: (itemsResult.data ?? []) as SiteItem[],
-    media: (mediaResult.data ?? []) as SiteMedia[],
+    sections: (sectionsResult.data ?? []) as unknown as SiteSection[],
+    items: (itemsResult.data ?? []) as unknown as SiteItem[],
+    media: (mediaResult.data ?? []) as unknown as SiteMedia[],
   };
 }

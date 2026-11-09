@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import { validateDeckList } from "@/lib/mtg/deck-validator";
 import type { Tournament, TournamentFormat } from "@/lib/types";
 
@@ -26,18 +26,18 @@ export async function POST(request: Request, context: { params: Promise<{ code: 
   if (!parsedBody.success) return NextResponse.json({ error: "Revisa tus datos y la lista antes de continuar." }, { status: 400 });
 
   const { code } = await context.params;
-  const { data: tournamentData, error: tournamentError } = await adminInsforge.database
+  const { data: tournamentData, error: tournamentError } = await adminDb
     .from("pdh_tournaments")
     .select("id,code,name,format_code,starts_at,submission_deadline,location,max_players,public_notes,status")
     .eq("code", code.toUpperCase())
     .maybeSingle();
   if (tournamentError || !tournamentData) return NextResponse.json({ error: "El torneo no existe." }, { status: 404 });
 
-  const tournament = tournamentData as Tournament;
+  const tournament = tournamentData as unknown as Tournament;
   if (tournament.status !== "open") return NextResponse.json({ error: "La recepcion de listas no esta abierta." }, { status: 409 });
   if (Date.now() >= new Date(tournament.submission_deadline).getTime()) return NextResponse.json({ error: "El plazo para editar listas ya termino." }, { status: 409 });
 
-  const { data: formatData, error: formatError } = await adminInsforge.database
+  const { data: formatData, error: formatError } = await adminDb
     .from("pdh_formats")
     .select("code,label,scryfall_key,min_main_cards,max_sideboard_cards,max_copies")
     .eq("code", tournament.format_code)
@@ -46,7 +46,7 @@ export async function POST(request: Request, context: { params: Promise<{ code: 
 
   let validation;
   try {
-    validation = await validateDeckList(parsedBody.data.deckList, formatData as TournamentFormat);
+    validation = await validateDeckList(parsedBody.data.deckList, formatData as unknown as TournamentFormat);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "No fue posible validar la lista." }, { status: 503 });
   }
@@ -57,7 +57,7 @@ export async function POST(request: Request, context: { params: Promise<{ code: 
   let editToken = input.editToken;
 
   if (editToken) {
-    const { data } = await adminInsforge.database
+    const { data } = await adminDb
       .from("pdh_players")
       .select("id")
       .eq("tournament_id", tournament.id)
@@ -65,13 +65,13 @@ export async function POST(request: Request, context: { params: Promise<{ code: 
       .maybeSingle();
     player = data as { id: string } | null;
     if (!player) return NextResponse.json({ error: "El enlace de edicion no es valido para este torneo." }, { status: 403 });
-    await adminInsforge.database.from("pdh_players").update({ first_name: input.firstName, last_name: input.lastName, email: input.email || null }).eq("id", player.id);
+    await adminDb.from("pdh_players").update({ first_name: input.firstName, last_name: input.lastName, email: input.email || null }).eq("id", player.id);
   } else {
-    const { data: registered } = await adminInsforge.database.from("pdh_players").select("id").eq("tournament_id", tournament.id);
+    const { data: registered } = await adminDb.from("pdh_players").select("id").eq("tournament_id", tournament.id);
     if (tournament.max_players && (registered?.length ?? 0) >= tournament.max_players) return NextResponse.json({ error: "El torneo ya alcanzo su cupo maximo." }, { status: 409 });
 
     editToken = randomBytes(24).toString("base64url");
-    const { data, error } = await adminInsforge.database
+    const { data, error } = await adminDb
       .from("pdh_players")
       .insert([{ tournament_id: tournament.id, first_name: input.firstName, last_name: input.lastName, email: input.email || null, token_hash: hashToken(editToken) }])
       .select("id")
@@ -80,7 +80,7 @@ export async function POST(request: Request, context: { params: Promise<{ code: 
     player = data as { id: string };
   }
 
-  const { data: previous } = await adminInsforge.database
+  const { data: previous } = await adminDb
     .from("pdh_deck_submissions")
     .select("id,version_number")
     .eq("player_id", player.id)
@@ -88,9 +88,9 @@ export async function POST(request: Request, context: { params: Promise<{ code: 
     .limit(1)
     .maybeSingle();
   const version = ((previous as { version_number?: number } | null)?.version_number ?? 0) + 1;
-  if (previous) await adminInsforge.database.from("pdh_deck_submissions").update({ is_current: false }).eq("player_id", player.id).eq("is_current", true);
+  if (previous) await adminDb.from("pdh_deck_submissions").update({ is_current: false }).eq("player_id", player.id).eq("is_current", true);
 
-  const { data: submission, error: submissionError } = await adminInsforge.database
+  const { data: submission, error: submissionError } = await adminDb
     .from("pdh_deck_submissions")
     .insert([{
       tournament_id: tournament.id,
@@ -109,16 +109,16 @@ export async function POST(request: Request, context: { params: Promise<{ code: 
     .single();
 
   if (submissionError || !submission) {
-    if (previous) await adminInsforge.database.from("pdh_deck_submissions").update({ is_current: true }).eq("id", (previous as { id: string }).id);
+    if (previous) await adminDb.from("pdh_deck_submissions").update({ is_current: true }).eq("id", (previous as { id: string }).id);
     return NextResponse.json({ error: "La lista era legal, pero no pudimos guardarla." }, { status: 500 });
   }
 
-  const { error: cardsError } = await adminInsforge.database.from("pdh_deck_cards").insert(
+  const { error: cardsError } = await adminDb.from("pdh_deck_cards").insert(
     validation.cards.map((card) => ({ ...card, submission_id: (submission as { id: string }).id })),
   );
   if (cardsError) {
-    await adminInsforge.database.from("pdh_deck_submissions").delete().eq("id", (submission as { id: string }).id);
-    if (previous) await adminInsforge.database.from("pdh_deck_submissions").update({ is_current: true }).eq("id", (previous as { id: string }).id);
+    await adminDb.from("pdh_deck_submissions").delete().eq("id", (submission as { id: string }).id);
+    if (previous) await adminDb.from("pdh_deck_submissions").update({ is_current: true }).eq("id", (previous as { id: string }).id);
     return NextResponse.json({ error: "No pudimos guardar el detalle de las cartas." }, { status: 500 });
   }
 

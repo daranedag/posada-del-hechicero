@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/admin";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import { getImageKitAsset } from "@/lib/imagekit";
 import { chileInstant, isDate, occursOn } from "@/lib/events/calendar";
 import { getAdminEvent, getEventException } from "@/lib/events/data";
@@ -51,7 +51,7 @@ export async function saveEventAction(_previous: EventFormState, form: FormData)
       const asset = await getImageKitAsset(fileId);
       image = { image_url: asset.url, image_key: `imagekit:${asset.fileId}` };
     }
-    const { data, error } = await adminInsforge.database.rpc("pdh_save_calendar_event_with_registration", {
+    const { data, error } = await adminDb.rpc("pdh_save_calendar_event_with_registration", {
       p_owner_id: user.id,
       p_registration: input.deck_registration === "on" ? {
         format_code: input.deck_format,

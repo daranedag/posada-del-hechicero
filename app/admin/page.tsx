@@ -11,7 +11,7 @@ import {
 import { AdminNav } from "@/components/admin-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { formatChileDate } from "@/lib/dates";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import type { Tournament } from "@/lib/types";
 
 export const metadata = { title: "Administración" };
@@ -20,18 +20,18 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ estado?: string }> }) {
   await requireAdmin();
   const [{ data: tournamentData }, { data: contactData }] = await Promise.all([
-    adminInsforge.database
+    adminDb
       .from("pdh_tournaments")
       .select("id,code,name,format_code,starts_at,submission_deadline,location,max_players,public_notes,status")
       .order("starts_at", { ascending: false })
       .limit(50),
-    adminInsforge.database
+    adminDb
       .from("pdh_contact_submissions")
       .select("id,status")
       .eq("status", "new")
       .limit(200),
   ]);
-  const tournaments = (tournamentData ?? []) as Tournament[];
+  const tournaments = (tournamentData ?? []) as unknown as Tournament[];
   const newMessages = contactData?.length ?? 0;
   const { estado } = await searchParams;
   const operationSucceeded = estado === "torneo-eliminado";

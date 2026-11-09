@@ -27,11 +27,6 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/nc7yzttc6/posada-del-hechicero/**",
       },
-      {
-        protocol: "https",
-        hostname: "556adz76.us-east.insforge.app",
-        pathname: "/api/storage/buckets/pdh_media/objects/**",
-      },
     ],
   },
 };

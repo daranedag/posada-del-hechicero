@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/admin";
 import { SITE_SECTION_KEYS } from "@/lib/data/site-content";
-import { adminInsforge } from "@/lib/insforge/admin";
+import { adminDb } from "@/lib/db/admin";
 import { getImageKitAsset } from "@/lib/imagekit";
 
 const sectionKeySchema = z.enum(SITE_SECTION_KEYS);
@@ -57,7 +57,7 @@ export async function updateSiteSectionAction(formData: FormData) {
   if (!parsed.success) siteRedirect("error");
 
   const { key, kicker, title, body, sortOrder, isVisible } = parsed.data;
-  const { error } = await adminInsforge.database.from("pdh_site_sections").update({
+  const { error } = await adminDb.from("pdh_site_sections").update({
     kicker,
     title,
     body,
@@ -84,7 +84,7 @@ export async function createSiteItemAction(formData: FormData) {
   if (!parsed.success) siteRedirect("error");
 
   const { sectionKey, itemType, title, body, href, sortOrder, isVisible } = parsed.data;
-  const { error } = await adminInsforge.database.from("pdh_site_items").insert([{
+  const { error } = await adminDb.from("pdh_site_items").insert([{
     section_key: sectionKey,
     item_type: itemType,
     title,
@@ -114,7 +114,7 @@ export async function updateSiteItemAction(formData: FormData) {
   if (!id.success || !parsed.success) siteRedirect("error");
 
   const { sectionKey, itemType, title, body, href, sortOrder, isVisible } = parsed.data;
-  const { error } = await adminInsforge.database.from("pdh_site_items").update({
+  const { error } = await adminDb.from("pdh_site_items").update({
     section_key: sectionKey,
     item_type: itemType,
     title,
@@ -133,7 +133,7 @@ export async function deleteSiteItemAction(formData: FormData) {
   await requireAdmin();
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (!id.success) siteRedirect("error");
-  const { error } = await adminInsforge.database.from("pdh_site_items").delete().eq("id", id.data);
+  const { error } = await adminDb.from("pdh_site_items").delete().eq("id", id.data);
   if (error) siteRedirect("error");
   refreshSiteAdmin();
   siteRedirect("eliminado");
@@ -158,7 +158,7 @@ export async function uploadSiteMediaAction(formData: FormData) {
   const image = await selectedImage(formData);
   if (!image) siteRedirect("error");
 
-  const { error } = await adminInsforge.database.from("pdh_site_media").insert([{
+  const { error } = await adminDb.from("pdh_site_media").insert([{
     section_key: sectionKey.data,
     ...image,
     alt_text: altText.data,
@@ -182,7 +182,7 @@ export async function updateSiteMediaAction(formData: FormData) {
   if (!id.success || !altText.success || !caption.success || !sortOrder.success) siteRedirect("error");
 
   const image = await selectedImage(formData);
-  const { error } = await adminInsforge.database.from("pdh_site_media").update({
+  const { error } = await adminDb.from("pdh_site_media").update({
     ...image,
     alt_text: altText.data,
     caption: caption.data,
@@ -200,21 +200,8 @@ export async function deleteSiteMediaAction(formData: FormData) {
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (!id.success) siteRedirect("error");
 
-  const { data, error: readError } = await adminInsforge.database
-    .from("pdh_site_media")
-    .select("image_key")
-    .eq("id", id.data)
-    .maybeSingle();
-  if (readError) siteRedirect("error");
-
-  const { error } = await adminInsforge.database.from("pdh_site_media").delete().eq("id", id.data);
+  const { error } = await adminDb.from("pdh_site_media").delete().eq("id", id.data);
   if (error) siteRedirect("error");
-
-  const imageKey = (data as { image_key: string | null } | null)?.image_key;
-  if (imageKey && !imageKey.startsWith("imagekit:")) {
-    const removal = await adminInsforge.storage.from("pdh_media").remove(imageKey);
-    if (removal.error) console.error("La imagen se quitó del sitio, pero no del almacenamiento", removal.error);
-  }
 
   refreshSiteAdmin();
   siteRedirect("eliminado");
