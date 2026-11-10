@@ -30,6 +30,13 @@ const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resol
 
 const localizedCards = new Map<string, ScryfallCard | null>();
 
+// Scryfall also indexes historical misprints: Spanish "Isla" can match Plains.
+// Use the established basic-land translations, then verify the printed alias below.
+const spanishBasicLands = new Map([
+  ["isla", "Island"], ["llanura", "Plains"], ["pantano", "Swamp"],
+  ["montana", "Mountain"], ["bosque", "Forest"],
+]);
+
 const requestHeaders = {
   Accept: "application/json",
   "User-Agent": "PosadaDelHechiceroDeckRegistration/1.0 (Valdivia, Chile)",
@@ -44,7 +51,8 @@ async function fetchSpanishCardByName(name: string) {
   const cached = localizedCards.get(normalized);
   if (cached !== undefined) return cached ?? undefined;
 
-  const query = `!"${escapeScryfallSearchValue(name.trim())}" lang:es`;
+  const searchName = spanishBasicLands.get(normalized) ?? name.trim();
+  const query = `!"${escapeScryfallSearchValue(searchName)}" lang:es`;
   const url = new URL("https://api.scryfall.com/cards/search");
   url.searchParams.set("q", query);
   url.searchParams.set("unique", "cards");

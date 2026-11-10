@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { evaluateDeckRules } from "../lib/mtg/deck-rules.ts";
+import { parseDeckList } from "../lib/mtg/deck-parser.ts";
 import type { ParsedDeckCard } from "../lib/mtg/deck-parser.ts";
 import type { ScryfallCard } from "../lib/mtg/scryfall.ts";
 
@@ -15,6 +16,7 @@ function card(name: string, options: Partial<ScryfallCard> = {}): ScryfallCard {
 function parsed(cards: ParsedDeckCard[]) {
   return {
     cards,
+    invalidLines: [],
     cardLines: cards.map((item, index) => ({ lineNumber: index + 1, name: item.name })),
     mainCount: cards.filter((item) => item.board === "main").reduce((sum, item) => sum + item.quantity, 0),
     sideboardCount: cards.filter((item) => item.board === "sideboard").reduce((sum, item) => sum + item.quantity, 0),
@@ -78,7 +80,7 @@ test("suma las copias escritas en inglés y español usando el mismo oracle_id",
 
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((error) => error.includes("Lightning Bolt: 5 copias")));
-  assert.deepEqual(result.cards.map((item) => item.card_name), ["Forest", "Lightning Bolt", "Lightning Bolt"]);
+  assert.deepEqual(result.cards.map((item) => [item.card_name, item.quantity]), [["Forest", 55], ["Lightning Bolt", 5]]);
 });
 
 test("informa el nombre y las líneas de las cartas no encontradas", () => {
@@ -91,4 +93,25 @@ test("informa el nombre y las líneas de las cartas no encontradas", () => {
   const result = evaluateDeckRules(deck, pioneer, new Map(), ["Carta Inventada"]);
 
   assert.deepEqual(result.notFoundCards, [{ name: "Carta Inventada", lineNumbers: [2, 8] }]);
+});
+
+test("rechaza una lista con 60 cartas legales si otra línea no se puede validar", () => {
+  const forest = card("Forest", { type_line: "Basic Land — Forest" });
+  const result = evaluateDeckRules(parseDeckList("Deck\n60 Forest\nCarta sin cantidad"), pioneer, new Map([["forest", forest]]));
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some(error => /línea 3/.test(error)));
+});
+
+test("agrupa nombres ingleses y españoles en una sola fila por carta y zona para Neon", () => {
+  const forest = card("Forest", { type_line: "Basic Land — Forest" });
+  const opt = card("Opt");
+  const result = evaluateDeckRules(
+    parseDeckList("Deck\n56 Forest\n2 Opt\n2 Optar\nSideboard\n15 Bosque"),
+    pioneer,
+    new Map([["forest", forest], ["bosque", forest], ["opt", opt], ["optar", opt]]),
+  );
+  assert.equal(result.valid, true);
+  assert.deepEqual(result.cards.map(c => [c.board, c.card_name, c.quantity]), [
+    ["main", "Forest", 56], ["main", "Opt", 4], ["sideboard", "Forest", 15],
+  ]);
 });

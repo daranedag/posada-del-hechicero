@@ -6,7 +6,7 @@ import type { TournamentFormat } from "@/lib/types";
 
 export async function validateDeckList(raw: string, format: TournamentFormat): Promise<DeckValidationResult> {
   const parsed = parseDeckList(raw);
-  if (!parsed.cards.length) return evaluateDeckRules(parsed, format, new Map());
+  if (!parsed.cards.length || parsed.invalidLines.length) return evaluateDeckRules(parsed, format, new Map());
 
   const { cards: scryfallCards, notFound } = await fetchCardsByName(parsed.cards.map((card) => card.name));
   return evaluateDeckRules(parsed, format, scryfallCards, notFound);

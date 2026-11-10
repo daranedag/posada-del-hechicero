@@ -58,3 +58,14 @@ Sideboard
     { lineNumber: 6, name: "Carta Inventada" },
   ]);
 });
+
+test("identifica todas las líneas inválidas en vez de omitir cartas", () => {
+  const result = parseDeckList("Deck\n60 Island\nCarta sin cantidad\n0 Opt\n1000 Negate\n# comentario\n\nSideboard\n2 Negate");
+  assert.deepEqual(result.invalidLines, [
+    { lineNumber: 3, text: "Carta sin cantidad" },
+    { lineNumber: 4, text: "0 Opt" },
+    { lineNumber: 5, text: "1000 Negate" },
+  ]);
+  assert.equal(result.mainCount, 60);
+  assert.equal(result.sideboardCount, 2);
+});

@@ -42,7 +42,7 @@ export function evaluateDeckRules(
 ): DeckValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const validatedCards: ValidatedCard[] = [];
+  const validatedCards = new Map<string, ValidatedCard>();
   const notFoundCards = notFound.map((name) => {
     const normalizedName = normalizeCardName(name);
     return {
@@ -54,6 +54,9 @@ export function evaluateDeckRules(
   });
 
   if (!parsed.cards.length) errors.push("No encontramos lineas con el formato 'cantidad nombre de carta'.");
+  for (const line of parsed.invalidLines) {
+    errors.push(`La línea ${line.lineNumber} ("${line.text}") no es válida. Usa 'cantidad nombre de carta', con una cantidad entre 1 y 999.`);
+  }
   if (parsed.mainCount < format.min_main_cards) errors.push(`El mazo principal tiene ${parsed.mainCount} cartas; necesita al menos ${format.min_main_cards}.`);
   if (parsed.sideboardCount > format.max_sideboard_cards) errors.push(`El sideboard tiene ${parsed.sideboardCount} cartas; el maximo es ${format.max_sideboard_cards}.`);
   for (const missing of notFound) errors.push(`No encontramos la carta "${missing}" en Scryfall.`);
@@ -70,7 +73,11 @@ export function evaluateDeckRules(
     current.quantity += parsedCard.quantity;
     totalsByOracle.set(oracleKey, current);
 
-    validatedCards.push({ board: parsedCard.board, quantity: parsedCard.quantity, card_name: card.name, scryfall_id: card.id, oracle_id: card.oracle_id ?? null, set_code: card.set, collector_number: card.collector_number, type_line: card.type_line, legality });
+    // Neon stores one canonical card name per submission and board.
+    const storageKey = `${parsedCard.board}:${card.name}`;
+    const existing = validatedCards.get(storageKey);
+    if (existing) existing.quantity += parsedCard.quantity;
+    else validatedCards.set(storageKey, { board: parsedCard.board, quantity: parsedCard.quantity, card_name: card.name, scryfall_id: card.id, oracle_id: card.oracle_id ?? null, set_code: card.set, collector_number: card.collector_number, type_line: card.type_line, legality });
   }
 
   for (const entry of totalsByOracle.values()) {
@@ -78,5 +85,5 @@ export function evaluateDeckRules(
   }
   if (parsed.mainCount > 250) warnings.push("El mazo principal es inusualmente grande; confirma que pegaste solo una lista.");
 
-  return { valid: errors.length === 0, errors, warnings, notFoundCards, mainCount: parsed.mainCount, sideboardCount: parsed.sideboardCount, cards: validatedCards };
+  return { valid: errors.length === 0, errors, warnings, notFoundCards, mainCount: parsed.mainCount, sideboardCount: parsed.sideboardCount, cards: [...validatedCards.values()] };
 }
